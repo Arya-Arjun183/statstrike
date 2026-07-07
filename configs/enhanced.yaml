@@ -1,0 +1,32 @@
+# Enhanced configuration — all features enabled, walk-forward validation,
+# stacking ensemble with probability calibration.
+
+data:
+  csv_glob: data/raw/*.csv
+  date_column: Date
+  target_column: FTR
+
+features:
+  include_rest_days: true
+  include_xg_proxy: true
+  include_elo: true
+  include_multi_window: true
+  include_discipline: true
+  include_odds_movement: true
+  include_multi_bookmaker: true
+  include_fixture_congestion: true
+  include_halftime: true
+  include_opponent_adj: true
+
+training:
+  algorithm: stacking_ensemble
+  calibrate: true
+  walk_forward: true
+  holdout_season: "25-26"
+  random_state: 42
+  tuning:
+    validation_fraction: 0.2
+    metric: accuracy
+
+output:
+  model_path: models/premier_league_model.joblib

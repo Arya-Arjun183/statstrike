@@ -1,0 +1,25 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Test and tooling
+.pytest_cache/
+.mypy_cache/
+.coverage
+
+# Local data outputs
+data/processed/*.csv
+models/*.joblib
+
+# OS files
+.DS_Store
