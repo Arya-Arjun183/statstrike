@@ -22,7 +22,7 @@ def _resolve_paths(csv_path: str | Path | None, csv_glob: str | None) -> list[Pa
 
 
 def _read_csv_with_season(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path)
+    df = pd.read_csv(path).copy()  # defragment wide CSVs
     return df.assign(season=path.stem)
 
 
@@ -31,7 +31,7 @@ def _concat_dataframes(frames: Iterable[pd.DataFrame]) -> pd.DataFrame:
     if "Date" in merged.columns:
         merged["Date"] = pd.to_datetime(merged["Date"], dayfirst=True, errors="coerce")
         merged = merged.sort_values("Date").reset_index(drop=True)
-    return merged
+    return merged.copy()  # defragment
 
 
 def load_matches(csv_path: str | Path | None = None, csv_glob: str | None = None) -> pd.DataFrame:

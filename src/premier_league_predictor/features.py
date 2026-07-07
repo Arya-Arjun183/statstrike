@@ -122,7 +122,15 @@ def _build_pre_match_stats(  # noqa: C901 – unavoidable complexity
     include_fixture_congestion: bool,
     include_halftime: bool,
     include_opponent_adj: bool,
+    freeze_idx: int | None = None,
 ) -> pd.DataFrame:
+    """Build pre-match features row-by-row.
+
+    If *freeze_idx* is set, rows at index >= freeze_idx still get their
+    features computed (using accumulated history) but do **not** update
+    any accumulators afterwards.  This is used for prediction rows so
+    that multiple upcoming fixtures all see the same historical state.
+    """
     team_stats: dict[str, dict] = {}
     elo_ratings: dict[str, float] = {}
     rows: list[dict[str, float]] = []
@@ -132,7 +140,7 @@ def _build_pre_match_stats(  # noqa: C901 – unavoidable complexity
     has_corners = include_discipline and set(CORNER_COLUMNS).issubset(df.columns)
     has_halftime = include_halftime and set(HALFTIME_COLUMNS).issubset(df.columns)
 
-    for row in df.itertuples(index=False):
+    for row_idx, row in enumerate(df.itertuples(index=False)):
         match_date = row.Date
         home_team = str(row.HomeTeam)
         away_team = str(row.AwayTeam)
@@ -323,7 +331,11 @@ def _build_pre_match_stats(  # noqa: C901 – unavoidable complexity
 
         # ===================================================================
         # POST-MATCH UPDATES — update accumulators after feature extraction
+        # Skip updates for prediction rows (at or beyond freeze_idx).
         # ===================================================================
+        if freeze_idx is not None and row_idx >= freeze_idx:
+            continue
+
         fthg = float(row.FTHG)
         ftag = float(row.FTAG)
         result = str(row.FTR)
@@ -463,6 +475,7 @@ def build_features(
     include_fixture_congestion: bool = True,
     include_halftime: bool = True,
     include_opponent_adj: bool = True,
+    prediction_df: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, pd.Series]:
     """Build pre-match feature matrix and target labels from raw match data.
 
@@ -470,11 +483,28 @@ def build_features(
     match kicks off, so there is no data leakage.  All boolean flags default
     to ``True`` so that the full feature set is used unless explicitly
     disabled.
+
+    If *prediction_df* is provided, those rows are appended with dummy
+    results.  Their features are computed from accumulated history but
+    they do not update any accumulators (so multiple prediction rows all
+    see the same historical state).
     """
     validate_columns(df)
 
     ordered_df = df.sort_values("Date").reset_index(drop=True).copy()
     ordered_df["Date"] = pd.to_datetime(ordered_df["Date"], dayfirst=True, errors="coerce")
+
+    # Append prediction rows with dummy results.
+    freeze_idx: int | None = None
+    if prediction_df is not None:
+        freeze_idx = len(ordered_df)
+        pred = prediction_df.copy()
+        pred["Date"] = pd.to_datetime(pred["Date"], dayfirst=True, errors="coerce")
+        # Fill required result columns with dummies (never used).
+        for col, default in (("FTHG", 0), ("FTAG", 0), ("FTR", "H")):
+            if col not in pred.columns:
+                pred[col] = default
+        ordered_df = pd.concat([ordered_df, pred], ignore_index=True)
 
     feat = _build_pre_match_stats(
         ordered_df,
@@ -486,6 +516,7 @@ def build_features(
         include_fixture_congestion=include_fixture_congestion,
         include_halftime=include_halftime,
         include_opponent_adj=include_opponent_adj,
+        freeze_idx=freeze_idx,
     )
     feat["is_weekend"] = ordered_df["Date"].dt.dayofweek.ge(5).astype(int)
     feat["home_team"] = ordered_df["HomeTeam"].astype(str)
