@@ -1,0 +1,31 @@
+data:
+  csv_glob: data/raw/*.csv
+  date_column: Date
+  target_column: FTR
+  target_type: binary_home_win
+
+features:
+  include_rest_days: true
+  include_xg_proxy: true
+  include_elo: true
+  include_multi_window: true
+  include_discipline: true
+  include_odds_movement: true
+  include_multi_bookmaker: true
+  include_fixture_congestion: true
+  include_halftime: true
+  include_opponent_adj: true
+
+training:
+  algorithm: hist_gradient_boosting
+  calibrate: true
+  walk_forward: true
+  holdout_season: "25-26"
+  season_decay_rate: 0.85
+  random_state: 42
+  tuning:
+    validation_fraction: 0.2
+    metric: accuracy
+
+output:
+  model_path: models/binary_home_model.joblib

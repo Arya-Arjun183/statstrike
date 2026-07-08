@@ -95,6 +95,15 @@ def _walk_forward_train(config: dict) -> dict:
     df = load_matches(csv_path=data_cfg.get("csv_path"), csv_glob=data_cfg.get("csv_glob"))
     x, y = build_features(df, **fw_kwargs)
 
+    exclude_seasons = data_cfg.get("exclude_seasons", [])
+    if exclude_seasons and "_season" in x.columns:
+        keep_mask = ~x["_season"].isin(exclude_seasons)
+        x = x.loc[keep_mask]
+        y = y.loc[keep_mask]
+
+    if data_cfg.get("target_type") == "binary_home_win":
+        y = (y == "H").astype(int)
+
     if "_season" not in x.columns:
         raise ValueError("Walk-forward requires a 'season' column in the data. "
                          "Use csv_glob to load multiple season files.")
@@ -206,6 +215,15 @@ def _simple_train(config: dict) -> dict:
     df = load_matches(csv_path=data_cfg.get("csv_path"), csv_glob=data_cfg.get("csv_glob"))
     x, y = build_features(df, **fw_kwargs)
     
+    exclude_seasons = data_cfg.get("exclude_seasons", [])
+    if exclude_seasons and "_season" in x.columns:
+        keep_mask = ~x["_season"].isin(exclude_seasons)
+        x = x.loc[keep_mask]
+        y = y.loc[keep_mask]
+
+    if data_cfg.get("target_type") == "binary_home_win":
+        y = (y == "H").astype(int)
+        
     seasons = x["_season"].copy() if "_season" in x.columns else None
     x = _drop_metadata_columns(x)
 
