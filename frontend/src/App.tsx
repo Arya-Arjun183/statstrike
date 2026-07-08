@@ -68,7 +68,7 @@ function App() {
 
   return (
     <div>
-      <h1>Premier League Oracle</h1>
+      <h1>StatStrike</h1>
       <p className="subtitle">AI-powered match predictions & betting analytics</p>
 
       <div className="app-grid">
