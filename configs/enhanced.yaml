@@ -23,6 +23,7 @@ training:
   calibrate: true
   walk_forward: true
   holdout_season: "25-26"
+  season_decay_rate: 0.85
   random_state: 42
   tuning:
     validation_fraction: 0.2

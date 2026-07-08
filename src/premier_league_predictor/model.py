@@ -26,14 +26,14 @@ class TwoStageDrawClassifier(BaseEstimator, ClassifierMixin):
         self.draw_model = LogisticRegression(max_iter=1000, class_weight="balanced")
         self.non_draw_model = LogisticRegression(max_iter=1000, class_weight="balanced")
 
-    def fit(self, x: np.ndarray, y: np.ndarray) -> "TwoStageDrawClassifier":
+    def fit(self, x: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None) -> "TwoStageDrawClassifier":
         y_array = np.asarray(y)
         self.classes_ = np.unique(y_array)
         is_draw = (y_array == "D").astype(int)
-        self.draw_model.fit(x, is_draw)
+        self.draw_model.fit(x, is_draw, sample_weight=sample_weight)
 
         if self.draw_threshold is None:
-            draw_rate = float(is_draw.mean())
+            draw_rate = float(np.average(is_draw, weights=sample_weight) if sample_weight is not None else is_draw.mean())
             train_draw_prob = self.draw_model.predict_proba(x)[:, 1]
             quantile = max(0.0, min(1.0, 1.0 - draw_rate))
             self.draw_threshold_ = float(np.quantile(train_draw_prob, quantile))
@@ -41,7 +41,8 @@ class TwoStageDrawClassifier(BaseEstimator, ClassifierMixin):
             self.draw_threshold_ = float(self.draw_threshold)
 
         non_draw_mask = y_array != "D"
-        self.non_draw_model.fit(x[non_draw_mask], y_array[non_draw_mask])
+        sub_weights = sample_weight[non_draw_mask] if sample_weight is not None else None
+        self.non_draw_model.fit(x[non_draw_mask], y_array[non_draw_mask], sample_weight=sub_weights)
         return self
 
     def predict(self, x: np.ndarray) -> np.ndarray:
@@ -67,11 +68,14 @@ class CatBoostMultiClassClassifier(BaseEstimator, ClassifierMixin):
         )
         self.label_encoder = LabelEncoder()
 
-    def fit(self, x: np.ndarray, y: np.ndarray) -> "CatBoostMultiClassClassifier":
+    def fit(self, x: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None) -> "CatBoostMultiClassClassifier":
         y_array = np.asarray(y)
         self.label_encoder.fit(y_array)
         encoded_y = self.label_encoder.transform(y_array).ravel()
-        self.model.fit(x, encoded_y)
+        if sample_weight is not None:
+            self.model.fit(x, encoded_y, sample_weight=sample_weight)
+        else:
+            self.model.fit(x, encoded_y)
         self.classes_ = self.label_encoder.classes_
         return self
 
@@ -111,8 +115,11 @@ class StackingEnsembleClassifier(BaseEstimator, ClassifierMixin):
             n_jobs=None,
         )
 
-    def fit(self, x: np.ndarray, y: np.ndarray) -> "StackingEnsembleClassifier":
-        self.model.fit(x, y)
+    def fit(self, x: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None) -> "StackingEnsembleClassifier":
+        if sample_weight is not None:
+            self.model.fit(x, y, sample_weight=sample_weight)
+        else:
+            self.model.fit(x, y)
         self.classes_ = self.model.classes_
         return self
 
@@ -147,8 +154,11 @@ class SoftVotingEnsembleClassifier(BaseEstimator, ClassifierMixin):
             n_jobs=None,
         )
 
-    def fit(self, x: np.ndarray, y: np.ndarray) -> "SoftVotingEnsembleClassifier":
-        self.model.fit(x, y)
+    def fit(self, x: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None) -> "SoftVotingEnsembleClassifier":
+        if sample_weight is not None:
+            self.model.fit(x, y, sample_weight=sample_weight)
+        else:
+            self.model.fit(x, y)
         self.classes_ = self.model.classes_
         return self
 

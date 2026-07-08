@@ -31,6 +31,23 @@ def _feature_kwargs(feature_cfg: dict) -> dict[str, bool]:
     return {k: bool(feature_cfg.get(k, True)) for k in _FEATURE_FLAG_KEYS}
 
 
+def _calculate_sample_weights(seasons_series, decay_rate: float) -> np.ndarray:
+    if decay_rate >= 1.0:
+        return np.ones(len(seasons_series))
+    
+    def extract_year(s):
+        try:
+            return int(str(s).split('-')[0])
+        except (ValueError, AttributeError):
+            return 0
+
+    years = seasons_series.apply(extract_year)
+    max_year = years.max()
+    gaps = max_year - years
+    weights = decay_rate ** gaps
+    return weights.values
+
+
 def _drop_metadata_columns(x):
     """Remove internal metadata columns before training."""
     to_drop = [c for c in ("_season",) if c in x.columns]
@@ -108,9 +125,15 @@ def _walk_forward_train(config: dict) -> dict:
         y_tr = y.loc[train_mask]
         x_te = x_clean.loc[test_mask]
         y_te = y.loc[test_mask]
+        
+        train_seasons_tr = seasons.loc[train_mask]
+        decay_rate = float(train_cfg.get("season_decay_rate", 1.0))
+        fit_params = {}
+        if decay_rate < 1.0:
+            fit_params["clf__sample_weight"] = _calculate_sample_weights(train_seasons_tr, decay_rate)
 
         pipe = build_model(algorithm, calibrate=calibrate)
-        pipe.fit(x_tr, y_tr)
+        pipe.fit(x_tr, y_tr, **fit_params)
 
         preds = pipe.predict(x_te)
         acc = float(accuracy_score(y_te, preds))
@@ -133,9 +156,15 @@ def _walk_forward_train(config: dict) -> dict:
     y_train_final = y.loc[train_mask]
     x_holdout = x_clean.loc[holdout_mask]
     y_holdout = y.loc[holdout_mask]
+    
+    train_seasons_final = seasons.loc[train_mask]
+    decay_rate = float(train_cfg.get("season_decay_rate", 1.0))
+    fit_params_final = {}
+    if decay_rate < 1.0:
+        fit_params_final["clf__sample_weight"] = _calculate_sample_weights(train_seasons_final, decay_rate)
 
     pipeline = build_model(algorithm, calibrate=calibrate)
-    pipeline.fit(x_train_final, y_train_final)
+    pipeline.fit(x_train_final, y_train_final, **fit_params_final)
 
     holdout_preds = pipeline.predict(x_holdout)
     holdout_acc = float(accuracy_score(y_holdout, holdout_preds))
@@ -176,6 +205,8 @@ def _simple_train(config: dict) -> dict:
 
     df = load_matches(csv_path=data_cfg.get("csv_path"), csv_glob=data_cfg.get("csv_glob"))
     x, y = build_features(df, **fw_kwargs)
+    
+    seasons = x["_season"].copy() if "_season" in x.columns else None
     x = _drop_metadata_columns(x)
 
     test_size = float(train_cfg.get("test_size", 0.2))
@@ -186,19 +217,37 @@ def _simple_train(config: dict) -> dict:
         split_idx = max(1, min(split_idx, len(x) - 1))
         x_train, x_test = x.iloc[:split_idx], x.iloc[split_idx:]
         y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
+        seasons_train = seasons.iloc[:split_idx] if seasons is not None else None
     else:
         from sklearn.model_selection import train_test_split
 
         n_classes = int(y.nunique())
         requested_test_rows = math.ceil(len(y) * test_size)
         stratify_target = y if requested_test_rows >= n_classes else None
-        x_train, x_test, y_train, y_test = train_test_split(
-            x,
-            y,
-            test_size=test_size,
-            random_state=int(train_cfg.get("random_state", 42)),
-            stratify=stratify_target,
-        )
+        
+        if seasons is not None:
+            x_train, x_test, y_train, y_test, seasons_train, _ = train_test_split(
+                x,
+                y,
+                seasons,
+                test_size=test_size,
+                random_state=int(train_cfg.get("random_state", 42)),
+                stratify=stratify_target,
+            )
+        else:
+            x_train, x_test, y_train, y_test = train_test_split(
+                x,
+                y,
+                test_size=test_size,
+                random_state=int(train_cfg.get("random_state", 42)),
+                stratify=stratify_target,
+            )
+            seasons_train = None
+
+    decay_rate = float(train_cfg.get("season_decay_rate", 1.0))
+    fit_params = {}
+    if decay_rate < 1.0 and seasons_train is not None:
+        fit_params["clf__sample_weight"] = _calculate_sample_weights(seasons_train, decay_rate)
 
     if algorithm == "two_stage_draw_model":
         validation_fraction = float(tuning_cfg.get("validation_fraction", 0.2))
@@ -210,7 +259,12 @@ def _simple_train(config: dict) -> dict:
         y_val = y_train.iloc[validation_split_idx:]
 
         probe_pipeline = build_model(algorithm)
-        probe_pipeline.fit(x_subtrain, y_subtrain)
+        
+        probe_fit_params = {}
+        if "clf__sample_weight" in fit_params:
+            probe_fit_params["clf__sample_weight"] = fit_params["clf__sample_weight"][:validation_split_idx]
+            
+        probe_pipeline.fit(x_subtrain, y_subtrain, **probe_fit_params)
 
         val_features = probe_pipeline.named_steps["prep"].transform(x_val)
         clf = probe_pipeline.named_steps["clf"]
@@ -227,7 +281,7 @@ def _simple_train(config: dict) -> dict:
     else:
         pipeline = build_model(algorithm, calibrate=calibrate)
 
-    pipeline.fit(x_train, y_train)
+    pipeline.fit(x_train, y_train, **fit_params)
 
     predictions = pipeline.predict(x_test)
     accuracy = accuracy_score(y_test, predictions)

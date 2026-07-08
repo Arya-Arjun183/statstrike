@@ -22,6 +22,7 @@ training:
   algorithm: logistic_regression  # options: logistic_regression, logistic_regression_balanced, random_forest, hist_gradient_boosting, two_stage_draw_model, catboost, stacking_ensemble, soft_voting_ensemble
   calibrate: false
   walk_forward: false
+  season_decay_rate: 1.0  # Weight multiplier per season back in time
   tuning:
     validation_fraction: 0.2
     metric: accuracy  # options: accuracy, draw_f1, hybrid
