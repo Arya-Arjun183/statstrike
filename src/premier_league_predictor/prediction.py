@@ -131,11 +131,11 @@ def predict_fixtures(
 
         if probas is not None and class_labels is not None:
             for cls, prob in zip(class_labels, probas[i]):
-                if cls == "H":
+                if str(cls) == "H" or str(cls) == "1":
                     result["prob_home"] = float(prob)
-                elif cls == "D":
+                elif str(cls) == "D":
                     result["prob_draw"] = float(prob)
-                elif cls == "A":
+                elif str(cls) == "A" or str(cls) == "0":
                     result["prob_away"] = float(prob)
 
         results.append(result)
