@@ -37,7 +37,11 @@ def _calculate_sample_weights(seasons_series, decay_rate: float) -> np.ndarray:
     
     def extract_year(s):
         try:
-            return int(str(s).split('-')[0])
+            parts = str(s).split('-')
+            for p in parts:
+                if p.isdigit():
+                    return int(p)
+            return 0
         except (ValueError, AttributeError):
             return 0
 
