@@ -20,8 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Use the best performing configuration
-CONFIG_PATH = "configs/binary_home.yaml"
+# Use the xG efficient configuration
+CONFIG_PATH = "configs/test_xg_efficient.yaml"
 
 class PredictionRequest(BaseModel):
     home_team: str

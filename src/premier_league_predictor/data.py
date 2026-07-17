@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable
 
+import numpy as np
 import pandas as pd
 
 
@@ -23,7 +24,30 @@ def _resolve_paths(csv_path: str | Path | None, csv_glob: str | None) -> list[Pa
 
 def _read_csv_with_season(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path).copy()  # defragment wide CSVs
-    return df.assign(season=path.stem)
+    
+    # Normalize columns for xG datasets
+    if "goals_home" in df.columns and "FTHG" not in df.columns:
+        df = df.rename(columns={"goals_home": "FTHG"})
+    if "goals_away" in df.columns and "FTAG" not in df.columns:
+        df = df.rename(columns={"goals_away": "FTAG"})
+        
+    if "FTHG" in df.columns and "FTAG" in df.columns and "FTR" not in df.columns:
+        df["FTR"] = "D"
+        df.loc[df["FTHG"] > df["FTAG"], "FTR"] = "H"
+        df.loc[df["FTHG"] < df["FTAG"], "FTR"] = "A"
+
+    if "Date" in df.columns:
+        # Convert Date to datetime temporarily to extract season
+        dt = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
+        year = dt.dt.year.fillna(0).astype(int)
+        month = dt.dt.month.fillna(0).astype(int)
+        # season is year if month >= 8, else year-1
+        start_year = np.where(month >= 8, year, year - 1)
+        df["season"] = [f"{sy}-{sy+1}" if sy > 0 else path.stem for sy in start_year]
+    else:
+        df["season"] = path.stem
+        
+    return df
 
 
 def _concat_dataframes(frames: Iterable[pd.DataFrame]) -> pd.DataFrame:

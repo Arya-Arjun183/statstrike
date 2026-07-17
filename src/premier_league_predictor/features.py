@@ -580,5 +580,10 @@ def build_features(
             feat["spread_draw"] = imp_d_df.max(axis=1) - imp_d_df.min(axis=1)
             feat["spread_away"] = imp_a_df.max(axis=1) - imp_a_df.min(axis=1)
 
+    for col in ["FTHG", "FTAG", "HXG", "AXG"]:
+        if col in ordered_df.columns:
+            feat[col] = ordered_df[col].values
+
     target = ordered_df["FTR"].astype(str)
+    
     return feat, target

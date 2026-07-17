@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
+from scipy.optimize import minimize
+from scipy.stats import poisson
+from sklearn.base import BaseEstimator, ClassifierMixin, TransformerMixin, clone
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.ensemble import (
@@ -14,8 +16,167 @@ from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
-
+import pandas as pd
 from catboost import CatBoostClassifier
+
+
+class TargetDropper(BaseEstimator, TransformerMixin):
+    """Drop target columns before passing data to ML models to prevent leakage."""
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X):
+        return X.drop(columns=["FTHG", "FTAG", "HXG", "AXG"], errors="ignore")
+
+
+class DixonColesClassifier(BaseEstimator, ClassifierMixin):
+    """Dixon-Coles Poisson model for predicting football matches."""
+
+    def __init__(self, target_type="dixon_coles_actual") -> None:
+        self.target_type = target_type
+
+    def fit(self, x: np.ndarray | pd.DataFrame, y: np.ndarray | pd.DataFrame, sample_weight: np.ndarray | None = None) -> "DixonColesClassifier":
+        if isinstance(x, np.ndarray):
+            raise ValueError("DixonColesClassifier requires a DataFrame with 'home_team' and 'away_team' columns.")
+        
+        if self.target_type == "dixon_coles_actual":
+            y_home = np.asarray(x["FTHG"])
+            y_away = np.asarray(x["FTAG"])
+            self.use_rho = True
+        elif self.target_type in ("dixon_coles_xg", "dixon_coles_xg_efficient"):
+            y_home = np.asarray(x["HXG"])
+            y_away = np.asarray(x["AXG"])
+            self.use_rho = False
+        else:
+            raise ValueError(f"Unsupported target_type for DixonColes: {self.target_type}")
+
+        self.teams_ = np.unique(np.concatenate([x["home_team"].unique(), x["away_team"].unique()]))
+        self.team_to_idx_ = {team: i for i, team in enumerate(self.teams_)}
+        n_teams = len(self.teams_)
+        
+        home_idx = np.array([self.team_to_idx_[t] for t in x["home_team"]])
+        away_idx = np.array([self.team_to_idx_[t] for t in x["away_team"]])
+        
+        def log_likelihood(params):
+            attack = params[:n_teams]
+            defense = params[n_teams:2*n_teams]
+            home_adv = params[2*n_teams]
+            rho = params[2*n_teams+1] if self.use_rho else 0.0
+
+            lambda_home = np.exp(attack[home_idx] + defense[away_idx] + home_adv)
+            lambda_away = np.exp(attack[away_idx] + defense[home_idx])
+            
+            ll_h = y_home * np.log(lambda_home) - lambda_home
+            ll_a = y_away * np.log(lambda_away) - lambda_away
+            ll = ll_h + ll_a
+            
+            if self.use_rho and rho != 0.0:
+                tau = np.ones_like(ll)
+                m00 = (y_home == 0) & (y_away == 0)
+                m01 = (y_home == 0) & (y_away == 1)
+                m10 = (y_home == 1) & (y_away == 0)
+                m11 = (y_home == 1) & (y_away == 1)
+                
+                tau[m00] = 1 - lambda_home[m00] * lambda_away[m00] * rho
+                tau[m01] = 1 + lambda_home[m01] * rho
+                tau[m10] = 1 + lambda_away[m10] * rho
+                tau[m11] = 1 - rho
+                
+                tau = np.clip(tau, 1e-10, None)
+                ll += np.log(tau)
+                
+            if sample_weight is not None:
+                ll = ll * sample_weight
+                
+            penalty = 1000 * (np.mean(attack) - 1.0)**2
+            return -np.sum(ll) + penalty
+
+        x0 = np.ones(2 * n_teams + 2)
+        x0[:n_teams] = 1.0
+        x0[n_teams:2*n_teams] = -1.0
+        x0[2*n_teams] = 0.2
+        x0[2*n_teams+1] = 0.0
+
+        bounds = [(None, None)] * (2 * n_teams) + [(None, None), (-0.5, 0.5)]
+        
+        res = minimize(log_likelihood, x0, bounds=bounds, method='L-BFGS-B')
+        
+        self.params_ = res.x
+        self.attack_ = self.params_[:n_teams]
+        self.defense_ = self.params_[n_teams:2*n_teams]
+        self.home_adv_ = self.params_[2*n_teams]
+        self.rho_ = self.params_[2*n_teams+1] if self.use_rho else 0.0
+        
+        if self.target_type == "dixon_coles_xg_efficient":
+            act_home = np.asarray(x["FTHG"])
+            act_away = np.asarray(x["FTAG"])
+            self.efficiency_ = np.ones(n_teams)
+            for i in range(n_teams):
+                h_mask = (home_idx == i)
+                a_mask = (away_idx == i)
+                w_h = sample_weight[h_mask] if sample_weight is not None else np.ones(np.sum(h_mask))
+                w_a = sample_weight[a_mask] if sample_weight is not None else np.ones(np.sum(a_mask))
+                
+                act_goals = np.sum(act_home[h_mask] * w_h) + np.sum(act_away[a_mask] * w_a)
+                xg_goals = np.sum(y_home[h_mask] * w_h) + np.sum(y_away[a_mask] * w_a)
+                
+                self.efficiency_[i] = (act_goals + 1.0) / (xg_goals + 1.0)
+        
+        self.classes_ = np.array(["A", "D", "H"])
+        return self
+
+    def predict_proba(self, x: np.ndarray | pd.DataFrame) -> np.ndarray:
+        if isinstance(x, np.ndarray):
+            raise ValueError("DixonColesClassifier requires a DataFrame with 'home_team' and 'away_team' columns.")
+
+        home_idx = np.array([self.team_to_idx_.get(t, -1) for t in x["home_team"]])
+        away_idx = np.array([self.team_to_idx_.get(t, -1) for t in x["away_team"]])
+        
+        mean_attack = np.mean(self.attack_)
+        mean_defense = np.mean(self.defense_)
+        
+        h_attack = np.where(home_idx >= 0, self.attack_[home_idx], mean_attack)
+        a_defense = np.where(away_idx >= 0, self.defense_[away_idx], mean_defense)
+        a_attack = np.where(away_idx >= 0, self.attack_[away_idx], mean_attack)
+        h_defense = np.where(home_idx >= 0, self.defense_[home_idx], mean_defense)
+        
+        lambda_home = np.exp(h_attack + a_defense + self.home_adv_)
+        lambda_away = np.exp(a_attack + h_defense)
+        
+        if self.target_type == "dixon_coles_xg_efficient":
+            h_eff = np.where(home_idx >= 0, self.efficiency_[home_idx], 1.0)
+            a_eff = np.where(away_idx >= 0, self.efficiency_[away_idx], 1.0)
+            lambda_home *= h_eff
+            lambda_away *= a_eff
+        
+        max_goals = 10
+        probs = np.zeros((len(x), 3))
+        
+        for h in range(max_goals + 1):
+            for a in range(max_goals + 1):
+                p = poisson.pmf(h, lambda_home) * poisson.pmf(a, lambda_away)
+                if self.use_rho and self.rho_ != 0:
+                    if h == 0 and a == 0:
+                        p *= np.maximum(1e-10, 1 - lambda_home * lambda_away * self.rho_)
+                    elif h == 0 and a == 1:
+                        p *= np.maximum(1e-10, 1 + lambda_home * self.rho_)
+                    elif h == 1 and a == 0:
+                        p *= np.maximum(1e-10, 1 + lambda_away * self.rho_)
+                    elif h == 1 and a == 1:
+                        p *= np.maximum(1e-10, 1 - self.rho_)
+                        
+                if h < a:
+                    probs[:, 0] += p
+                elif h == a:
+                    probs[:, 1] += p
+                else:
+                    probs[:, 2] += p
+                
+        probs /= probs.sum(axis=1, keepdims=True)
+        return probs
+
+    def predict(self, x: np.ndarray | pd.DataFrame) -> np.ndarray:
+        proba = self.predict_proba(x)
+        return self.classes_[np.argmax(proba, axis=1)]
 
 
 class TwoStageDrawClassifier(BaseEstimator, ClassifierMixin):
@@ -88,25 +249,55 @@ class CatBoostMultiClassClassifier(BaseEstimator, ClassifierMixin):
         return self.model.predict_proba(x)
 
 
+class PipelineWithWeight(BaseEstimator, ClassifierMixin):
+    """Wrapper to route sample_weight correctly through a pipeline."""
+    def __init__(self, drop, prep, clf):
+        self.drop = drop
+        self.prep = prep
+        self.clf = clf
+
+    def fit(self, X, y, sample_weight=None):
+        self.pipe_ = Pipeline([("drop", clone(self.drop)), ("prep", clone(self.prep)), ("clf", clone(self.clf))])
+        fit_params = {}
+        if sample_weight is not None:
+            fit_params["clf__sample_weight"] = sample_weight
+        self.pipe_.fit(X, y, **fit_params)
+        self.classes_ = self.pipe_.classes_
+        return self
+
+    def predict(self, X):
+        return self.pipe_.predict(X)
+
+    def predict_proba(self, X):
+        return self.pipe_.predict_proba(X)
+
+
 class StackingEnsembleClassifier(BaseEstimator, ClassifierMixin):
     """Stack several diverse classifiers and learn a final combiner."""
 
-    def __init__(self) -> None:
+    def __init__(self, base_prep=None, dixon_coles_target="dixon_coles_xg") -> None:
+        prep_step = "passthrough" if base_prep is None else clone(base_prep)
+        
+        def _make_pipe(clf):
+            prep = clone(prep_step) if prep_step != "passthrough" else prep_step
+            return PipelineWithWeight(TargetDropper(), prep, clf)
+            
         self.model = StackingClassifier(
             estimators=[
-                ("logreg", LogisticRegression(max_iter=1000)),
-                ("rf", RandomForestClassifier(n_estimators=400, random_state=42)),
+                ("logreg", _make_pipe(LogisticRegression(max_iter=1000))),
+                ("rf", _make_pipe(RandomForestClassifier(n_estimators=400, random_state=42))),
                 (
                     "hgb",
-                    HistGradientBoostingClassifier(
+                    _make_pipe(HistGradientBoostingClassifier(
                         learning_rate=0.05,
                         max_iter=300,
                         max_depth=5,
                         min_samples_leaf=20,
                         random_state=42,
-                    ),
+                    )),
                 ),
-                ("cat", CatBoostMultiClassClassifier()),
+                ("cat", _make_pipe(CatBoostMultiClassClassifier())),
+                ("dixon_coles", DixonColesClassifier(target_type=dixon_coles_target)),
             ],
             final_estimator=LogisticRegression(max_iter=1000),
             stack_method="predict_proba",
@@ -133,22 +324,29 @@ class StackingEnsembleClassifier(BaseEstimator, ClassifierMixin):
 class SoftVotingEnsembleClassifier(BaseEstimator, ClassifierMixin):
     """Soft-voting ensemble that averages predicted probabilities."""
 
-    def __init__(self) -> None:
+    def __init__(self, base_prep=None, dixon_coles_target="dixon_coles_xg") -> None:
+        prep_step = "passthrough" if base_prep is None else clone(base_prep)
+        
+        def _make_pipe(clf):
+            prep = clone(prep_step) if prep_step != "passthrough" else prep_step
+            return PipelineWithWeight(TargetDropper(), prep, clf)
+            
         self.model = VotingClassifier(
             estimators=[
-                ("logreg", LogisticRegression(max_iter=1000)),
-                ("rf", RandomForestClassifier(n_estimators=400, random_state=42)),
+                ("logreg", _make_pipe(LogisticRegression(max_iter=1000))),
+                ("rf", _make_pipe(RandomForestClassifier(n_estimators=400, random_state=42))),
                 (
                     "hgb",
-                    HistGradientBoostingClassifier(
+                    _make_pipe(HistGradientBoostingClassifier(
                         learning_rate=0.05,
                         max_iter=300,
                         max_depth=5,
                         min_samples_leaf=20,
                         random_state=42,
-                    ),
+                    )),
                 ),
-                ("cat", CatBoostMultiClassClassifier()),
+                ("cat", _make_pipe(CatBoostMultiClassClassifier())),
+                ("dixon_coles", DixonColesClassifier(target_type=dixon_coles_target)),
             ],
             voting="soft",
             n_jobs=None,
@@ -221,6 +419,9 @@ _ALGORITHMS = (
     "catboost",
     "stacking_ensemble",
     "soft_voting_ensemble",
+    "dixon_coles_actual",
+    "dixon_coles_xg",
+    "dixon_coles_xg_efficient",
 )
 
 
@@ -228,6 +429,7 @@ def build_model(
     algorithm: str,
     draw_threshold: float | None = None,
     calibrate: bool = False,
+    dixon_coles_target: str = "dixon_coles_xg",
 ) -> Pipeline:
     """Construct a full sklearn Pipeline (preprocessor + classifier).
 
@@ -241,6 +443,9 @@ def build_model(
         If ``True``, wrap the classifier with ``CalibratedClassifierCV``
         (isotonic, 3-fold).  Ignored for the two-stage draw model.
     """
+    if algorithm in ("dixon_coles_actual", "dixon_coles_xg", "dixon_coles_xg_efficient"):
+        return Pipeline(steps=[("clf", DixonColesClassifier(target_type=algorithm))])
+
     numeric_pipeline = make_pipeline(SimpleImputer(strategy="median"), StandardScaler())
     categorical_pipeline = make_pipeline(
         SimpleImputer(strategy="most_frequent"),
@@ -263,9 +468,11 @@ def build_model(
     elif algorithm == "catboost":
         clf = CatBoostMultiClassClassifier()
     elif algorithm == "stacking_ensemble":
-        clf = StackingEnsembleClassifier()
+        clf = StackingEnsembleClassifier(base_prep=preprocessor, dixon_coles_target=dixon_coles_target)
+        return Pipeline(steps=[("clf", clf)])
     elif algorithm == "soft_voting_ensemble":
-        clf = SoftVotingEnsembleClassifier()
+        clf = SoftVotingEnsembleClassifier(base_prep=preprocessor, dixon_coles_target=dixon_coles_target)
+        return Pipeline(steps=[("clf", clf)])
     elif algorithm == "hist_gradient_boosting":
         clf = HistGradientBoostingClassifier(
             learning_rate=0.05,
@@ -283,4 +490,4 @@ def build_model(
     if calibrate and algorithm != "two_stage_draw_model":
         clf = CalibratedClassifierCV(clf, method="isotonic", cv=3)
 
-    return Pipeline(steps=[("prep", preprocessor), ("clf", clf)])
+    return Pipeline(steps=[("drop", TargetDropper()), ("prep", preprocessor), ("clf", clf)])

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
+import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report, log_loss
 
 from premier_league_predictor.data import load_matches
@@ -145,7 +146,7 @@ def _walk_forward_train(config: dict) -> dict:
         if decay_rate < 1.0:
             fit_params["clf__sample_weight"] = _calculate_sample_weights(train_seasons_tr, decay_rate)
 
-        pipe = build_model(algorithm, calibrate=calibrate)
+        pipe = build_model(algorithm, calibrate=calibrate, dixon_coles_target=data_cfg.get("target_type", "dixon_coles_xg"))
         pipe.fit(x_tr, y_tr, **fit_params)
 
         preds = pipe.predict(x_te)
@@ -176,7 +177,7 @@ def _walk_forward_train(config: dict) -> dict:
     if decay_rate < 1.0:
         fit_params_final["clf__sample_weight"] = _calculate_sample_weights(train_seasons_final, decay_rate)
 
-    pipeline = build_model(algorithm, calibrate=calibrate)
+    pipeline = build_model(algorithm, calibrate=calibrate, dixon_coles_target=data_cfg.get("target_type", "dixon_coles_xg"))
     pipeline.fit(x_train_final, y_train_final, **fit_params_final)
 
     holdout_preds = pipeline.predict(x_holdout)
@@ -243,9 +244,10 @@ def _simple_train(config: dict) -> dict:
     else:
         from sklearn.model_selection import train_test_split
 
-        n_classes = int(y.nunique())
+        eval_y_full = _get_eval_y(y)
+        n_classes = int(eval_y_full.nunique())
         requested_test_rows = math.ceil(len(y) * test_size)
-        stratify_target = y if requested_test_rows >= n_classes else None
+        stratify_target = eval_y_full if requested_test_rows >= n_classes else None
         
         if seasons is not None:
             x_train, x_test, y_train, y_test, seasons_train, _ = train_test_split(
@@ -280,7 +282,7 @@ def _simple_train(config: dict) -> dict:
         x_val = x_train.iloc[validation_split_idx:]
         y_val = y_train.iloc[validation_split_idx:]
 
-        probe_pipeline = build_model(algorithm)
+        probe_pipeline = build_model(algorithm, dixon_coles_target=data_cfg.get("target_type", "dixon_coles_xg"))
         
         probe_fit_params = {}
         if "clf__sample_weight" in fit_params:
@@ -299,9 +301,9 @@ def _simple_train(config: dict) -> dict:
         )
         print(f"tuned_draw_threshold={tuned_threshold:.4f} metric={threshold_metric}")
 
-        pipeline = build_model(algorithm, draw_threshold=tuned_threshold)
+        pipeline = build_model(algorithm, draw_threshold=tuned_threshold, dixon_coles_target=data_cfg.get("target_type", "dixon_coles_xg"))
     else:
-        pipeline = build_model(algorithm, calibrate=calibrate)
+        pipeline = build_model(algorithm, calibrate=calibrate, dixon_coles_target=data_cfg.get("target_type", "dixon_coles_xg"))
 
     pipeline.fit(x_train, y_train, **fit_params)
 
