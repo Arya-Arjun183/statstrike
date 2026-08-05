@@ -22,6 +22,28 @@ def _build_parser() -> argparse.ArgumentParser:
     eval_p = sub.add_parser("evaluate", help="Evaluate a trained model")
     eval_p.add_argument("--config", required=True, help="Path to YAML config")
 
+    # --- serve ---
+    serve_p = sub.add_parser("serve", help="Start the FastAPI prediction server")
+    serve_p.add_argument("--host", default="0.0.0.0", help="Bind host (default: 0.0.0.0)")
+    serve_p.add_argument("--port", type=int, default=8000, help="Bind port (default: 8000)")
+    serve_p.add_argument("--reload", action="store_true", default=True, help="Enable auto-reload")
+
+    # --- update-data ---
+    update_p = sub.add_parser("update-data", help="Download free weekly match data and retrain")
+    update_p.add_argument("--season", default="2526", help="Season code (e.g. 2526 or 2627)")
+    update_p.add_argument("--retrain", action="store_true", default=True, help="Retrain model after update")
+
+    # --- ingest-weekly ---
+    ingest_p = sub.add_parser("ingest-weekly", help="Ingest a custom CSV file of weekly match results")
+    ingest_p.add_argument("--file", required=True, help="Path to weekly CSV")
+    ingest_p.add_argument("--season", default="2026-2027", help="Season name (e.g. 2026-2027)")
+    ingest_p.add_argument("--retrain", action="store_true", default=True, help="Retrain model after ingest")
+
+    # --- fetch-understat ---
+    understat_p = sub.add_parser("fetch-understat", help="Fetch open Understat match & xG data and retrain")
+    understat_p.add_argument("--season", default="2025", help="Season starting year (e.g. 2025 or 2026)")
+    understat_p.add_argument("--retrain", action="store_true", default=True, help="Retrain model after fetch")
+
     # --- predict ---
     pred_p = sub.add_parser("predict", help="Predict upcoming match outcomes")
     pred_p.add_argument("--config", required=True, help="Path to YAML config")
@@ -75,6 +97,32 @@ def main() -> None:
     args = _build_parser().parse_args()
     if not args.command:
         _build_parser().print_help()
+        return
+
+    if args.command == "serve":
+        import uvicorn
+        uvicorn.run("premier_league_predictor.server:app", host=args.host, port=args.port, reload=args.reload)
+        return
+
+    if args.command == "update-data":
+        from premier_league_predictor.data_updater import download_football_data_season, update_and_retrain
+        download_football_data_season(args.season)
+        if args.retrain:
+            update_and_retrain()
+        return
+
+    if args.command == "ingest-weekly":
+        from premier_league_predictor.data_updater import ingest_weekly_csv, update_and_retrain
+        added = ingest_weekly_csv(args.file, args.season)
+        if added > 0 and args.retrain:
+            update_and_retrain()
+        return
+
+    if args.command == "fetch-understat":
+        from premier_league_predictor.data_updater import fetch_understat_season, update_and_retrain
+        added = fetch_understat_season(args.season)
+        if added > 0 and args.retrain:
+            update_and_retrain()
         return
 
     config = load_config(args.config)

@@ -6,14 +6,16 @@ from pydantic import BaseModel
 from premier_league_predictor.config import load_config
 from premier_league_predictor.prediction import predict_fixtures
 from premier_league_predictor.api_football import sync_latest_data
+from premier_league_predictor.matchday import (
+    get_matchday_overview,
+    compute_quick_facts,
+    compute_model_explainability,
+)
+from premier_league_predictor.data import load_matches, normalize_team_name
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Attempt initial data sync on startup if API key is present
-    try:
-        sync_latest_data()
-    except Exception as e:
-        print(f"Initial sync warning: {e}")
+    # Server starts up instantaneously using local dataset and trained models
     yield
 
 app = FastAPI(title="Premier League Predictor API", lifespan=lifespan)
@@ -35,9 +37,60 @@ class PredictionRequest(BaseModel):
     away_team: str
     date: str
 
+class MatchInsightsRequest(BaseModel):
+    home_team: str
+    away_team: str
+    date: str = "15/08/2026"
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+@app.get("/api/matchday")
+@app.get("/matchday")
+def matchday():
+    """Retrieve full matchday predictions, quick facts, and explainability."""
+    try:
+        return get_matchday_overview()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/match/insights")
+@app.post("/match/insights")
+def match_insights(request: MatchInsightsRequest):
+    """Retrieve deep quick facts and explainability for any matchup."""
+    try:
+        config = load_config(CONFIG_PATH)
+        fixtures = [{
+            "HomeTeam": request.home_team,
+            "AwayTeam": request.away_team,
+            "Date": request.date,
+        }]
+        results = predict_fixtures(config, fixtures)
+        if not results:
+            raise HTTPException(status_code=400, detail="Prediction failed.")
+        
+        p_res = results[0]
+        df_history = load_matches(
+            csv_path=config["data"].get("csv_path"),
+            csv_glob=config["data"].get("csv_glob")
+        )
+        quick_facts = compute_quick_facts(request.home_team, request.away_team, df_history)
+        explanation = compute_model_explainability(request.home_team, request.away_team, p_res, quick_facts)
+        
+        return {
+            "home_team": normalize_team_name(request.home_team),
+            "away_team": normalize_team_name(request.away_team),
+            "date": request.date,
+            "prediction": p_res.get("prediction"),
+            "prob_home": p_res.get("prob_home"),
+            "prob_draw": p_res.get("prob_draw"),
+            "prob_away": p_res.get("prob_away"),
+            "quick_facts": quick_facts,
+            "explanation": explanation,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/sync")
 def trigger_sync(background_tasks: BackgroundTasks):
@@ -46,6 +99,7 @@ def trigger_sync(background_tasks: BackgroundTasks):
     return {"message": "Data sync scheduled"}
 
 @app.post("/predict")
+@app.post("/api/predict")
 def predict(request: PredictionRequest):
     try:
         config = load_config(CONFIG_PATH)
