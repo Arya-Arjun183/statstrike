@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UploadCloud, CheckCircle, Activity, ChevronRight, Moon, Sun } from 'lucide-react';
+import { Activity, ChevronRight, Moon, Sun } from 'lucide-react';
 import './index.css';
 
 const TEAM_LOGOS: Record<string, string> = {
@@ -17,16 +17,43 @@ const TEAM_LOGOS: Record<string, string> = {
   "Leicester": "https://a.espncdn.com/i/teamlogos/soccer/500/375.png",
   "Liverpool": "https://a.espncdn.com/i/teamlogos/soccer/500/364.png",
   "Man City": "https://a.espncdn.com/i/teamlogos/soccer/500/382.png",
+  "Manchester City": "https://a.espncdn.com/i/teamlogos/soccer/500/382.png",
   "Man Utd": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
+  "Man United": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
+  "Manchester United": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
   "Newcastle": "https://a.espncdn.com/i/teamlogos/soccer/500/361.png",
+  "Newcastle United": "https://a.espncdn.com/i/teamlogos/soccer/500/361.png",
   "Nott'm Forest": "https://a.espncdn.com/i/teamlogos/soccer/500/393.png",
+  "Nottingham Forest": "https://a.espncdn.com/i/teamlogos/soccer/500/393.png",
   "Southampton": "https://a.espncdn.com/i/teamlogos/soccer/500/376.png",
   "Tottenham": "https://a.espncdn.com/i/teamlogos/soccer/500/367.png",
   "West Ham": "https://a.espncdn.com/i/teamlogos/soccer/500/371.png",
-  "Wolves": "https://a.espncdn.com/i/teamlogos/soccer/500/380.png"
+  "Wolves": "https://a.espncdn.com/i/teamlogos/soccer/500/380.png",
+  "Wolverhampton Wanderers": "https://a.espncdn.com/i/teamlogos/soccer/500/380.png"
 };
 
-const TEAMS = Object.keys(TEAM_LOGOS).sort();
+const TEAMS = [
+  "Arsenal",
+  "Aston Villa",
+  "Bournemouth",
+  "Brentford",
+  "Brighton",
+  "Chelsea",
+  "Crystal Palace",
+  "Everton",
+  "Fulham",
+  "Ipswich",
+  "Leicester",
+  "Liverpool",
+  "Man City",
+  "Man United",
+  "Newcastle",
+  "Nott'm Forest",
+  "Southampton",
+  "Tottenham",
+  "West Ham",
+  "Wolves"
+].sort();
 
 function getConfidenceLevel(prob: number) {
   const maxProb = Math.max(prob, 1 - prob);
@@ -52,8 +79,7 @@ function App() {
     }
   }, [isDarkMode]);
   
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   // Use the Render URL if deployed, otherwise fallback to local proxy
   const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -83,25 +109,7 @@ function App() {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    setUploadStatus('uploading');
-    try {
-      await axios.post(`${API_URL}/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setUploadStatus('success');
-      setTimeout(() => setUploadStatus('idle'), 3000);
-    } catch (err) {
-      console.error(err);
-      setUploadStatus('error');
-    }
-  };
+
 
   return (
     <div>
@@ -115,26 +123,7 @@ function App() {
         <div className="glass-panel">
           <h2>Match Details</h2>
           
-          <div 
-            className={`file-upload-zone ${uploadStatus === 'success' ? 'success' : ''}`}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {uploadStatus === 'uploading' ? (
-              <Activity className="loader" style={{margin: '0 auto'}} />
-            ) : uploadStatus === 'success' ? (
-              <CheckCircle size={32} style={{margin: '0 auto'}} />
-            ) : (
-              <UploadCloud size={32} style={{margin: '0 auto', color: 'var(--accent-color)'}} />
-            )}
-            <p>{uploadStatus === 'success' ? 'Database Updated!' : 'Upload Latest CSV Data'}</p>
-            <input 
-              type="file" 
-              accept=".csv" 
-              ref={fileInputRef} 
-              style={{display: 'none'}} 
-              onChange={handleFileUpload}
-            />
-          </div>
+
 
           <form onSubmit={handlePredict}>
             <div className="form-group">

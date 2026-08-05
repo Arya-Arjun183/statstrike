@@ -6,7 +6,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from premier_league_predictor.data import load_matches
+from premier_league_predictor.data import load_matches, normalize_team_name
 from premier_league_predictor.features import build_features
 
 _FEATURE_FLAG_KEYS = (
@@ -20,6 +20,7 @@ _FEATURE_FLAG_KEYS = (
     "include_fixture_congestion",
     "include_halftime",
     "include_opponent_adj",
+    "include_xg_actual",
 )
 
 
@@ -40,7 +41,12 @@ def _build_fixture_df(
     Each dict must have at minimum ``Date``, ``HomeTeam``, ``AwayTeam``.
     Odds columns and other stats are optional.
     """
-    return pd.DataFrame(fixtures)
+    df = pd.DataFrame(fixtures)
+    if "HomeTeam" in df.columns:
+        df["HomeTeam"] = df["HomeTeam"].apply(normalize_team_name)
+    if "AwayTeam" in df.columns:
+        df["AwayTeam"] = df["AwayTeam"].apply(normalize_team_name)
+    return df
 
 
 def predict_fixtures(
@@ -87,6 +93,10 @@ def predict_fixtures(
         pred_df = _build_fixture_df(fixtures)
     else:
         pred_df = fixtures.copy()
+        if "HomeTeam" in pred_df.columns:
+            pred_df["HomeTeam"] = pred_df["HomeTeam"].apply(normalize_team_name)
+        if "AwayTeam" in pred_df.columns:
+            pred_df["AwayTeam"] = pred_df["AwayTeam"].apply(normalize_team_name)
 
     n_pred = len(pred_df)
     if n_pred == 0:

@@ -61,7 +61,7 @@ def _fixture_congestion(
     return sum(1 for d in recent_dates if d >= cutoff)
 
 
-def _init_team_stats(has_discipline: bool, has_corners: bool, has_halftime: bool) -> dict:
+def _init_team_stats(has_discipline: bool, has_corners: bool, has_halftime: bool, has_xg_actual: bool = False) -> dict:
     """Create a fresh team-stats accumulator dictionary."""
     stats: dict = {
         "played": 0.0,
@@ -104,6 +104,9 @@ def _init_team_stats(has_discipline: bool, has_corners: bool, has_halftime: bool
     if has_halftime:
         stats["last5_ht_gf"] = deque(maxlen=5)
         stats["last5_ht_ga"] = deque(maxlen=5)
+    if has_xg_actual:
+        stats["last5_xg_for"] = deque(maxlen=5)
+        stats["last5_xg_against"] = deque(maxlen=5)
     return stats
 
 
@@ -122,6 +125,7 @@ def _build_pre_match_stats(  # noqa: C901 – unavoidable complexity
     include_fixture_congestion: bool,
     include_halftime: bool,
     include_opponent_adj: bool,
+    include_xg_actual: bool,
     freeze_idx: int | None = None,
 ) -> pd.DataFrame:
     """Build pre-match features row-by-row.
@@ -139,6 +143,7 @@ def _build_pre_match_stats(  # noqa: C901 – unavoidable complexity
     has_discipline = include_discipline and set(DISCIPLINE_COLUMNS).issubset(df.columns)
     has_corners = include_discipline and set(CORNER_COLUMNS).issubset(df.columns)
     has_halftime = include_halftime and set(HALFTIME_COLUMNS).issubset(df.columns)
+    has_xg_actual = include_xg_actual and set(["HXG", "AXG"]).issubset(df.columns)
 
     for row_idx, row in enumerate(df.itertuples(index=False)):
         match_date = row.Date
@@ -147,11 +152,11 @@ def _build_pre_match_stats(  # noqa: C901 – unavoidable complexity
 
         home = team_stats.setdefault(
             home_team,
-            _init_team_stats(has_discipline, has_corners, has_halftime),
+            _init_team_stats(has_discipline, has_corners, has_halftime, has_xg_actual=has_xg_actual),
         )
         away = team_stats.setdefault(
             away_team,
-            _init_team_stats(has_discipline, has_corners, has_halftime),
+            _init_team_stats(has_discipline, has_corners, has_halftime, has_xg_actual=has_xg_actual),
         )
 
         # ---------- PRE-MATCH: Elo ----------
@@ -327,6 +332,19 @@ def _build_pre_match_stats(  # noqa: C901 – unavoidable complexity
             row_features["home_ht_ga_pg"] = h_ht_ga
             row_features["away_ht_ga_pg"] = a_ht_ga
 
+        # ---------- PRE-MATCH: Actual xG rolling form ----------
+        if has_xg_actual:
+            h_xgf = _rolling_average(home["last5_xg_for"])
+            a_xgf = _rolling_average(away["last5_xg_for"])
+            h_xga = _rolling_average(home["last5_xg_against"])
+            a_xga = _rolling_average(away["last5_xg_against"])
+            row_features["home_xg_for_pg"] = h_xgf
+            row_features["away_xg_for_pg"] = a_xgf
+            row_features["xg_for_diff"] = h_xgf - a_xgf
+            row_features["home_xg_against_pg"] = h_xga
+            row_features["away_xg_against_pg"] = a_xga
+            row_features["xg_against_diff"] = h_xga - a_xga
+
         rows.append(row_features)
 
         # ===================================================================
@@ -438,6 +456,15 @@ def _build_pre_match_stats(  # noqa: C901 – unavoidable complexity
             away["last5_ht_gf"].append(float(getattr(row, "HTAG")))
             away["last5_ht_ga"].append(float(getattr(row, "HTHG")))
 
+        # Actual xG accumulators
+        if has_xg_actual:
+            hxg = float(getattr(row, "HXG"))
+            axg = float(getattr(row, "AXG"))
+            home["last5_xg_for"].append(hxg)
+            home["last5_xg_against"].append(axg)
+            away["last5_xg_for"].append(axg)
+            away["last5_xg_against"].append(hxg)
+
     return pd.DataFrame(rows)
 
 
@@ -475,6 +502,7 @@ def build_features(
     include_fixture_congestion: bool = True,
     include_halftime: bool = True,
     include_opponent_adj: bool = True,
+    include_xg_actual: bool = False,
     prediction_df: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, pd.Series]:
     """Build pre-match feature matrix and target labels from raw match data.
@@ -516,6 +544,7 @@ def build_features(
         include_fixture_congestion=include_fixture_congestion,
         include_halftime=include_halftime,
         include_opponent_adj=include_opponent_adj,
+        include_xg_actual=include_xg_actual,
         freeze_idx=freeze_idx,
     )
     feat["is_weekend"] = ordered_df["Date"].dt.dayofweek.ge(5).astype(int)
@@ -580,5 +609,10 @@ def build_features(
             feat["spread_draw"] = imp_d_df.max(axis=1) - imp_d_df.min(axis=1)
             feat["spread_away"] = imp_a_df.max(axis=1) - imp_a_df.min(axis=1)
 
+    for col in ["FTHG", "FTAG", "HXG", "AXG"]:
+        if col in ordered_df.columns:
+            feat[col] = ordered_df[col].values
+
     target = ordered_df["FTR"].astype(str)
+    
     return feat, target

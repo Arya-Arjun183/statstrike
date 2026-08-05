@@ -1,15 +1,22 @@
-import os
-from pathlib import Path
-from typing import List
-
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from premier_league_predictor.config import load_config
 from premier_league_predictor.prediction import predict_fixtures
+from premier_league_predictor.api_football import sync_latest_data
 
-app = FastAPI(title="Premier League Predictor API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Attempt initial data sync on startup if API key is present
+    try:
+        sync_latest_data()
+    except Exception as e:
+        print(f"Initial sync warning: {e}")
+    yield
+
+app = FastAPI(title="Premier League Predictor API", lifespan=lifespan)
 
 # Allow CORS for local React development
 app.add_middleware(
@@ -20,8 +27,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Use the best performing configuration
-CONFIG_PATH = "configs/binary_home.yaml"
+# Use the xG efficient configuration
+CONFIG_PATH = "configs/test_xg_efficient.yaml"
 
 class PredictionRequest(BaseModel):
     home_team: str
@@ -31,6 +38,12 @@ class PredictionRequest(BaseModel):
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+@app.post("/sync")
+def trigger_sync(background_tasks: BackgroundTasks):
+    """Trigger a sync with API-Football in the background."""
+    background_tasks.add_task(sync_latest_data)
+    return {"message": "Data sync scheduled"}
 
 @app.post("/predict")
 def predict(request: PredictionRequest):
@@ -50,22 +63,7 @@ def predict(request: PredictionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/upload")
-async def upload_data(file: UploadFile = File(...)):
-    if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files are allowed.")
-    
-    data_dir = Path("data/raw/premier")
-    data_dir.mkdir(parents=True, exist_ok=True)
-    
-    file_path = data_dir / file.filename
-    try:
-        with open(file_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
-        return {"message": f"Successfully uploaded {file.filename}"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}")
+
 
 def start():
     """Start the uvicorn server."""

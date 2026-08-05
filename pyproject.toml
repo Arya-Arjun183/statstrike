@@ -17,6 +17,8 @@ dependencies = [
   "fastapi>=0.111.0",
   "uvicorn>=0.30.1",
   "python-multipart>=0.0.9",
+  "requests>=2.31.0",
+  "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -29,6 +31,7 @@ pl-predictor = "premier_league_predictor.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
