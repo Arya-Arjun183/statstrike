@@ -16,10 +16,15 @@ dist/
 .pytest_cache/
 .mypy_cache/
 .coverage
+catboost_info/
 
 # Local data outputs
 data/processed/*.csv
+data/raw/premier/api-football-cache.csv
 # models/*.joblib
 
 # OS files
 .DS_Store
+
+.env
+
