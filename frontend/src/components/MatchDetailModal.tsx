@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, TrendingUp, Shield, Zap, Calendar, MapPin, Swords, BarChart3, Clock } from 'lucide-react';
+import { X, Sparkles, TrendingUp, Shield, Zap, MapPin, Swords, BarChart3, Clock } from 'lucide-react';
 import type { MatchFixture } from '../types/matchday';
 import { getTeamLogo } from '../utils/teamAssets';
 import { formatMatchDateTime } from '../utils/dateUtils';
