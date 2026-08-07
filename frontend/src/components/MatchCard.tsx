@@ -1,7 +1,8 @@
 import React from 'react';
-import { ArrowRight, Clock, MapPin, Sparkles, Tv } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, Sparkles } from 'lucide-react';
 import type { MatchFixture } from '../types/matchday';
 import { getTeamLogo } from '../utils/teamAssets';
+import { formatMatchDateTime } from '../utils/dateUtils';
 
 interface MatchCardProps {
   match: MatchFixture;
@@ -12,6 +13,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
   const homePct = Math.round(match.prob_home * 100);
   const drawPct = Math.round(match.prob_draw * 100);
   const awayPct = Math.round(match.prob_away * 100);
+
+  const localTimeInfo = formatMatchDateTime(match.date, match.time);
 
   const getPredictionTitle = () => {
     if (match.prediction === 'H') return `${match.home_team} Win`;
@@ -36,13 +39,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
       <div className="card-top-meta">
         <div className="meta-time">
           <Clock size={13} />
-          <span>{match.date} • {match.time}</span>
-          {match.broadcaster && (
-            <span className="broadcaster-pill">
-              <Tv size={11} />
-              {match.broadcaster}
-            </span>
-          )}
+          <span>{localTimeInfo.fullLocalDisplay}</span>
         </div>
         <div className={`confidence-tag ${match.confidence_class}`}>
           {match.confidence_class === 'confidence-high' && <Sparkles size={11} />}

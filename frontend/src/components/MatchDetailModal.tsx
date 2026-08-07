@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Sparkles, TrendingUp, Shield, Zap, Calendar, MapPin, Swords, BarChart3 } from 'lucide-react';
+import { X, Sparkles, TrendingUp, Shield, Zap, Calendar, MapPin, Swords, BarChart3, Clock } from 'lucide-react';
 import type { MatchFixture } from '../types/matchday';
 import { getTeamLogo } from '../utils/teamAssets';
+import { formatMatchDateTime } from '../utils/dateUtils';
 
 interface MatchDetailModalProps {
   match: MatchFixture | null;
@@ -16,6 +17,8 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
   const homePct = Math.round(match.prob_home * 100);
   const drawPct = Math.round(match.prob_draw * 100);
   const awayPct = Math.round(match.prob_away * 100);
+
+  const localTimeInfo = formatMatchDateTime(match.date, match.time);
 
   const getPredictionTitle = () => {
     if (match.prediction === 'H') return `${match.home_team} Win`;
@@ -52,8 +55,8 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
 
             <div className="hero-center-status">
               <div className="hero-meta-row">
-                <Calendar size={13} />
-                <span>{match.date} • {match.time}</span>
+                <Clock size={13} />
+                <span>{localTimeInfo.fullLocalDisplay}</span>
               </div>
               <div className={`pred-outcome-pill large ${getPredictionClass()}`}>
                 {getPredictionTitle()}
