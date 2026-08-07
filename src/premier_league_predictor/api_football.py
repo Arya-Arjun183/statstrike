@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import requests
 import pandas as pd
 from pathlib import Path
@@ -56,7 +57,6 @@ def get_mapped_team_name(api_name: str) -> str:
 
 def fetch_api(endpoint: str, params: dict = None) -> dict:
     if not API_FOOTBALL_KEY:
-        print("API_FOOTBALL_KEY not found in environment, skipping API-Football sync.")
         return {}
     
     url = f"https://{API_FOOTBALL_HOST}/{endpoint}"
@@ -64,9 +64,16 @@ def fetch_api(endpoint: str, params: dict = None) -> dict:
         "x-rapidapi-key": API_FOOTBALL_KEY,
         "x-rapidapi-host": API_FOOTBALL_HOST
     }
-    response = requests.get(url, headers=headers, params=params)
-    response.raise_for_status()
-    return response.json()
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code == 429:
+            print("API-Football rate limit reached (10 req/min limit on free tier). Live sync paused.")
+            return {}
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"API-Football request error: {e}")
+        return {}
 
 def extract_expected_goals(fixture_id: int) -> tuple[float, float]:
     """Fetch statistics for a fixture and extract home and away expected goals."""
@@ -137,6 +144,7 @@ def sync_latest_data(season: int = 2024) -> pd.DataFrame:
             
             print(f"Fetching xG for {home_team} vs {away_team}...")
             home_xg, away_xg = extract_expected_goals(fixture_id)
+            time.sleep(1.0)
             
             new_rows.append({
                 "Date": date_formatted,

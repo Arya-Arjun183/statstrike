@@ -1,219 +1,153 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Activity, ChevronRight, Moon, Sun } from 'lucide-react';
+import { Activity, AlertCircle, RefreshCw } from 'lucide-react';
+import { MatchdayHeader } from './components/MatchdayHeader';
+import { MatchCard } from './components/MatchCard';
+import { MatchDetailModal } from './components/MatchDetailModal';
+import { CustomSimulator } from './components/CustomSimulator';
+import type { MatchFixture, MatchdayOverview } from './types/matchday';
 import './index.css';
 
-const TEAM_LOGOS: Record<string, string> = {
-  "Arsenal": "https://a.espncdn.com/i/teamlogos/soccer/500/359.png",
-  "Aston Villa": "https://a.espncdn.com/i/teamlogos/soccer/500/362.png",
-  "Bournemouth": "https://a.espncdn.com/i/teamlogos/soccer/500/349.png",
-  "Brentford": "https://a.espncdn.com/i/teamlogos/soccer/500/337.png",
-  "Brighton": "https://a.espncdn.com/i/teamlogos/soccer/500/331.png",
-  "Chelsea": "https://a.espncdn.com/i/teamlogos/soccer/500/363.png",
-  "Crystal Palace": "https://a.espncdn.com/i/teamlogos/soccer/500/384.png",
-  "Everton": "https://a.espncdn.com/i/teamlogos/soccer/500/368.png",
-  "Fulham": "https://a.espncdn.com/i/teamlogos/soccer/500/370.png",
-  "Ipswich": "https://upload.wikimedia.org/wikipedia/en/thumb/4/43/Ipswich_Town.svg/500px-Ipswich_Town.svg.png",
-  "Leicester": "https://a.espncdn.com/i/teamlogos/soccer/500/375.png",
-  "Liverpool": "https://a.espncdn.com/i/teamlogos/soccer/500/364.png",
-  "Man City": "https://a.espncdn.com/i/teamlogos/soccer/500/382.png",
-  "Manchester City": "https://a.espncdn.com/i/teamlogos/soccer/500/382.png",
-  "Man Utd": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
-  "Man United": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
-  "Manchester United": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
-  "Newcastle": "https://a.espncdn.com/i/teamlogos/soccer/500/361.png",
-  "Newcastle United": "https://a.espncdn.com/i/teamlogos/soccer/500/361.png",
-  "Nott'm Forest": "https://a.espncdn.com/i/teamlogos/soccer/500/393.png",
-  "Nottingham Forest": "https://a.espncdn.com/i/teamlogos/soccer/500/393.png",
-  "Southampton": "https://a.espncdn.com/i/teamlogos/soccer/500/376.png",
-  "Tottenham": "https://a.espncdn.com/i/teamlogos/soccer/500/367.png",
-  "West Ham": "https://a.espncdn.com/i/teamlogos/soccer/500/371.png",
-  "Wolves": "https://a.espncdn.com/i/teamlogos/soccer/500/380.png",
-  "Wolverhampton Wanderers": "https://a.espncdn.com/i/teamlogos/soccer/500/380.png"
-};
+export function App() {
+  const [matchdayData, setMatchdayData] = useState<MatchdayOverview | null>(null);
+  const [selectedMatchweek, setSelectedMatchweek] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<MatchFixture | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'high_conf' | 'toss_up'>('all');
+  const [activeView, setActiveView] = useState<'matchday' | 'custom'>('matchday');
+  const [isLightMode, setIsLightMode] = useState<boolean>(false);
 
-const TEAMS = [
-  "Arsenal",
-  "Aston Villa",
-  "Bournemouth",
-  "Brentford",
-  "Brighton",
-  "Chelsea",
-  "Crystal Palace",
-  "Everton",
-  "Fulham",
-  "Ipswich",
-  "Leicester",
-  "Liverpool",
-  "Man City",
-  "Man United",
-  "Newcastle",
-  "Nott'm Forest",
-  "Southampton",
-  "Tottenham",
-  "West Ham",
-  "Wolves"
-].sort();
+  const API_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-function getConfidenceLevel(prob: number) {
-  const maxProb = Math.max(prob, 1 - prob);
-  if (maxProb >= 0.60) return { label: 'High Confidence', class: 'confidence-high' };
-  if (maxProb >= 0.53) return { label: 'Moderate Confidence', class: 'confidence-med' };
-  return { label: 'Toss Up', class: 'confidence-low' };
-}
-
-function App() {
-  const [homeTeam, setHomeTeam] = useState(TEAMS[0]);
-  const [awayTeam, setAwayTeam] = useState(TEAMS[1]);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  
-  const [loading, setLoading] = useState(false);
-  const [prediction, setPrediction] = useState<any>(null);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  
-  useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.remove('light-mode');
-    } else {
-      document.body.classList.add('light-mode');
-    }
-  }, [isDarkMode]);
-  
-
-
-  // Use the Render URL if deployed, otherwise fallback to local proxy
-  const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-
-  const handlePredict = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const fetchMatchday = useCallback(async (mw: number = selectedMatchweek) => {
     setLoading(true);
-    setPrediction(null);
+    setError(null);
     try {
-      // Date formatting for backend (DD/MM/YYYY)
-      const [year, month, day] = date.split('-');
-      const formattedDate = `${day}/${month}/${year}`;
-      
-      const res = await axios.post(`${API_URL}/predict`, {
-        home_team: homeTeam,
-        away_team: awayTeam,
-        date: formattedDate
-      });
-      if (res.data.results && res.data.results.length > 0) {
-        setPrediction(res.data.results[0]);
+      const res = await axios.get(`${API_URL}/api/matchday?matchweek=${mw}`);
+      setMatchdayData(res.data);
+      if (res.data?.current_matchweek) {
+        setSelectedMatchweek(res.data.current_matchweek);
       }
-    } catch (err) {
-      console.error(err);
-      alert('Failed to get prediction. Check console for details.');
+    } catch (err: any) {
+      console.error('Failed to load matchday predictions:', err);
+      setError(err?.response?.data?.detail || 'Unable to connect to the prediction server.');
     } finally {
       setLoading(false);
     }
+  }, [API_URL, selectedMatchweek]);
+
+  useEffect(() => {
+    fetchMatchday(selectedMatchweek);
+  }, [selectedMatchweek]);
+
+  const handleSelectMatchweek = (mw: number) => {
+    setSelectedMatchweek(mw);
   };
 
+  useEffect(() => {
+    if (isLightMode) {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
+  }, [isLightMode]);
 
+  const toggleTheme = () => {
+    setIsLightMode((prev) => !prev);
+  };
+
+  const getFilteredMatches = (): MatchFixture[] => {
+    if (!matchdayData || !matchdayData.matches) return [];
+    if (activeFilter === 'high_conf') {
+      return matchdayData.matches.filter((m) => m.confidence_class === 'confidence-high');
+    }
+    if (activeFilter === 'toss_up') {
+      return matchdayData.matches.filter(
+        (m) => m.confidence_class === 'confidence-low' || m.prediction === 'D'
+      );
+    }
+    return matchdayData.matches;
+  };
+
+  const filteredMatches = getFilteredMatches();
 
   return (
-    <div>
-      <div className="theme-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
-        {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
-      </div>
-      <h1>StatStrike</h1>
-      <p className="subtitle">AI-powered match predictions & betting analytics</p>
+    <div className="app-shell">
+      {/* Top Header & Overview Banner */}
+      <MatchdayHeader
+        round={matchdayData?.round || `Gameweek ${selectedMatchweek}`}
+        season={matchdayData?.season || '2026/27'}
+        totalFixtures={matchdayData?.total_fixtures || 10}
+        currentMatchweek={matchdayData?.current_matchweek || selectedMatchweek}
+        availableMatchweeks={matchdayData?.available_matchweeks || Array.from({ length: 38 }, (_, i) => i + 1)}
+        onSelectMatchweek={handleSelectMatchweek}
+        summary={matchdayData?.summary}
+        activeFilter={activeFilter}
+        onSelectFilter={(f) => setActiveFilter(f)}
+        activeView={activeView}
+        onSelectView={(v) => setActiveView(v)}
+        isLightMode={isLightMode}
+        onToggleTheme={toggleTheme}
+      />
 
-      <div className="app-grid">
-        <div className="glass-panel">
-          <h2>Match Details</h2>
-          
-
-
-          <form onSubmit={handlePredict}>
-            <div className="form-group">
-              <label>Home Team</label>
-              <select value={homeTeam} onChange={e => { setHomeTeam(e.target.value); setPrediction(null); }}>
-                {TEAMS.filter(t => t !== awayTeam).map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            
-            <div className="form-group">
-              <label>Away Team</label>
-              <select value={awayTeam} onChange={e => { setAwayTeam(e.target.value); setPrediction(null); }}>
-                {TEAMS.filter(t => t !== homeTeam).map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            
-            <div className="form-group">
-              <label>Match Date</label>
-              <input 
-                type="date" 
-                value={date} 
-                onChange={e => { setDate(e.target.value); setPrediction(null); }}
-                required
-              />
-            </div>
-            
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? <Activity className="loader" /> : 'Generate Prediction'}
-              {!loading && <ChevronRight size={20} />}
-            </button>
-          </form>
-        </div>
-
-        <div className="glass-panel" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
-          <div className="result-card">
-            <div className="matchup-container">
-              <div className="team-name-col">
-                <img src={TEAM_LOGOS[prediction ? prediction.home_team : homeTeam]} alt={prediction ? prediction.home_team : homeTeam} className="team-logo" />
-                <div className="match-title">{prediction ? prediction.home_team : homeTeam}</div>
+      {/* Main Content Area */}
+      <main className="main-content">
+        {activeView === 'matchday' ? (
+          <>
+            {loading && (
+              <div className="state-card glass-panel">
+                <Activity className="loader spinner-large" size={40} />
+                <h3 className="loading-title">Calculating Matchday Predictions...</h3>
+                <p className="loading-desc">
+                  Running Dixon-Coles Poisson simulations, extracting team forms, and computing exact scoreline likelihoods for all fixtures.
+                </p>
               </div>
-              <div className="vs-text">VS</div>
-              <div className="team-name-col">
-                <img src={TEAM_LOGOS[prediction ? prediction.away_team : awayTeam]} alt={prediction ? prediction.away_team : awayTeam} className="team-logo" />
-                <div className="match-title">{prediction ? prediction.away_team : awayTeam}</div>
-              </div>
-            </div>
-            <div className="match-date">{prediction ? prediction.date : date}</div>
-            
-            <div className="prediction-badge" style={{ visibility: prediction ? 'visible' : 'hidden' }}>
-              Prediction: {prediction ? (prediction.prediction === '1' || prediction.prediction === 'H' ? 'HOME WIN' : 'DRAW / AWAY WIN') : 'NONE'}
-            </div>
-            
-            <div style={{textAlign: 'left'}}>
-              <label>Win Probability</label>
-              <div className="probability-bar-container">
-                <div 
-                  className={`probability-fill ${loading ? 'calculating' : ''}`} 
-                  style={
-                    !loading ? {
-                      width: prediction ? `${prediction.prob_home * 100}%` : '0%',
-                      background: !prediction ? 'transparent' : undefined
-                    } : undefined
-                  }
-                />
-              </div>
-              <div className="prob-labels">
-                <span>Home Win: {prediction ? (prediction.prob_home * 100).toFixed(1) + '%' : '--%'}</span>
-                <span>Not Home Win: {prediction ? ((1 - prediction.prob_home) * 100).toFixed(1) + '%' : '--%'}</span>
-              </div>
+            )}
 
-              {/* Confidence Badge */}
-              <div className="confidence-badge-wrapper" style={{textAlign: 'center', minHeight: '32px'}}>
-                {loading ? (
-                  <div className="confidence-badge" style={{background: 'transparent', border: '1px solid var(--panel-border)', color: 'var(--text-primary)', boxShadow: 'none'}}>
-                    Calculating...
-                  </div>
-                ) : prediction ? (
-                  <div className={`confidence-badge ${getConfidenceLevel(prediction.prob_home).class}`}>
-                    {getConfidenceLevel(prediction.prob_home).label}
-                  </div>
+            {error && !loading && (
+              <div className="state-card glass-panel error-card">
+                <AlertCircle size={44} className="error-icon" />
+                <h3 className="error-title">Failed to Load Matchday Data</h3>
+                <p className="error-desc">{error}</p>
+                <button className="btn-primary retry-btn" onClick={() => fetchMatchday(selectedMatchweek)}>
+                  <RefreshCw size={16} />
+                  <span>Retry Calculation</span>
+                </button>
+              </div>
+            )}
+
+            {!loading && !error && (
+              <div className="matches-grid">
+                {filteredMatches.length > 0 ? (
+                  filteredMatches.map((match) => (
+                    <MatchCard
+                      key={match.fixture_id}
+                      match={match}
+                      onSelectMatch={(m) => setSelectedMatch(m)}
+                    />
+                  ))
                 ) : (
-                  <div className="confidence-badge" style={{background: 'transparent', border: '1px solid var(--panel-border)', color: 'var(--text-primary)', boxShadow: 'none'}}>
-                    Awaiting Prediction
+                  <div className="empty-filter-state glass-panel">
+                    <p>No matches match the selected filter.</p>
+                    <button className="btn-primary" onClick={() => setActiveFilter('all')}>
+                      Show All Matches
+                    </button>
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            )}
+          </>
+        ) : (
+          <CustomSimulator onInspectMatch={(m) => setSelectedMatch(m)} />
+        )}
+      </main>
+
+      {/* Interactive Match Detail Modal */}
+      <MatchDetailModal
+        match={selectedMatch}
+        onClose={() => setSelectedMatch(null)}
+      />
     </div>
   );
 }

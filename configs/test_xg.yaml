@@ -1,5 +1,5 @@
 data:
-  csv_path: data/raw/premier/epl-xg-data2014-25.csv
+  csv_path: data/raw/premier/epl-xg-data2014-26.csv
   target_type: dixon_coles_xg
 
 features:
@@ -15,7 +15,7 @@ features:
 training:
   algorithm: stacking_ensemble
   walk_forward: true
-  holdout_season: 2024-2025
+  holdout_season: 2025-2026
   season_decay_rate: 0.9
 
 output:
