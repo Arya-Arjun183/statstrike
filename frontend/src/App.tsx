@@ -6,6 +6,12 @@ import { MatchCard } from './components/MatchCard';
 import { MatchDetailModal } from './components/MatchDetailModal';
 import { CustomSimulator } from './components/CustomSimulator';
 import type { MatchFixture, MatchdayOverview } from './types/matchday';
+import {
+  trackMatchInspect,
+  trackGameweekChange,
+  trackFilterChange,
+  trackThemeToggle,
+} from './utils/analytics';
 import './index.css';
 
 export function App() {
@@ -43,6 +49,17 @@ export function App() {
 
   const handleSelectMatchweek = (mw: number) => {
     setSelectedMatchweek(mw);
+    trackGameweekChange(mw);
+  };
+
+  const handleSelectMatch = (m: MatchFixture) => {
+    setSelectedMatch(m);
+    trackMatchInspect(m.home_team, m.away_team, selectedMatchweek);
+  };
+
+  const handleFilterChange = (filter: 'all' | 'high_conf' | 'toss_up') => {
+    setActiveFilter(filter);
+    trackFilterChange(filter);
   };
 
   useEffect(() => {
@@ -54,7 +71,11 @@ export function App() {
   }, [isLightMode]);
 
   const toggleTheme = () => {
-    setIsLightMode((prev) => !prev);
+    setIsLightMode((prev) => {
+      const next = !prev;
+      trackThemeToggle(next ? 'light' : 'dark');
+      return next;
+    });
   };
 
   const getFilteredMatches = (): MatchFixture[] => {
@@ -84,7 +105,7 @@ export function App() {
         onSelectMatchweek={handleSelectMatchweek}
         summary={matchdayData?.summary}
         activeFilter={activeFilter}
-        onSelectFilter={(f) => setActiveFilter(f)}
+        onSelectFilter={handleFilterChange}
         activeView={activeView}
         onSelectView={(v) => setActiveView(v)}
         isLightMode={isLightMode}
@@ -124,13 +145,13 @@ export function App() {
                     <MatchCard
                       key={match.fixture_id}
                       match={match}
-                      onSelectMatch={(m) => setSelectedMatch(m)}
+                      onSelectMatch={handleSelectMatch}
                     />
                   ))
                 ) : (
                   <div className="empty-filter-state glass-panel">
                     <p>No matches match the selected filter.</p>
-                    <button className="btn-primary" onClick={() => setActiveFilter('all')}>
+                    <button className="btn-primary" onClick={() => handleFilterChange('all')}>
                       Show All Matches
                     </button>
                   </div>
@@ -139,7 +160,7 @@ export function App() {
             )}
           </>
         ) : (
-          <CustomSimulator onInspectMatch={(m) => setSelectedMatch(m)} />
+          <CustomSimulator onInspectMatch={handleSelectMatch} />
         )}
       </main>
 

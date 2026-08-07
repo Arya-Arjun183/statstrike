@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Activity, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import { ALL_TEAMS, getTeamLogo } from '../utils/teamAssets';
 import type { MatchFixture } from '../types/matchday';
+import { trackSimulation } from '../utils/analytics';
 
 interface CustomSimulatorProps {
   onInspectMatch: (match: MatchFixture) => void;
@@ -69,6 +70,7 @@ export const CustomSimulator: React.FC<CustomSimulatorProps> = ({ onInspectMatch
       };
 
       setSimulatedMatch(matchFixture);
+      trackSimulation(data.home_team, data.away_team, data.prediction);
     } catch (err: any) {
       console.error('Simulation error:', err);
       setErrorMsg(err?.response?.data?.detail || 'Failed to simulate match. Please verify the server is running.');
