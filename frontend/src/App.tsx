@@ -10,6 +10,7 @@ import './index.css';
 
 export function App() {
   const [matchdayData, setMatchdayData] = useState<MatchdayOverview | null>(null);
+  const [selectedMatchweek, setSelectedMatchweek] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<MatchFixture | null>(null);
@@ -19,23 +20,30 @@ export function App() {
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-  const fetchMatchday = useCallback(async () => {
+  const fetchMatchday = useCallback(async (mw: number = selectedMatchweek) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_URL}/api/matchday`);
+      const res = await axios.get(`${API_URL}/api/matchday?matchweek=${mw}`);
       setMatchdayData(res.data);
+      if (res.data?.current_matchweek) {
+        setSelectedMatchweek(res.data.current_matchweek);
+      }
     } catch (err: any) {
       console.error('Failed to load matchday predictions:', err);
       setError(err?.response?.data?.detail || 'Unable to connect to the prediction server.');
     } finally {
       setLoading(false);
     }
-  }, [API_URL]);
+  }, [API_URL, selectedMatchweek]);
 
   useEffect(() => {
-    fetchMatchday();
-  }, [fetchMatchday]);
+    fetchMatchday(selectedMatchweek);
+  }, [selectedMatchweek]);
+
+  const handleSelectMatchweek = (mw: number) => {
+    setSelectedMatchweek(mw);
+  };
 
   useEffect(() => {
     if (isLightMode) {
@@ -65,17 +73,20 @@ export function App() {
   const filteredMatches = getFilteredMatches();
 
   return (
-    <div className="statstrike-app">
-      {/* Header */}
+    <div className="app-shell">
+      {/* Top Header & Overview Banner */}
       <MatchdayHeader
-        round={matchdayData?.round || 'Gameweek 1'}
+        round={matchdayData?.round || `Gameweek ${selectedMatchweek}`}
         season={matchdayData?.season || '2026/27'}
         totalFixtures={matchdayData?.total_fixtures || 10}
+        currentMatchweek={matchdayData?.current_matchweek || selectedMatchweek}
+        availableMatchweeks={matchdayData?.available_matchweeks || Array.from({ length: 38 }, (_, i) => i + 1)}
+        onSelectMatchweek={handleSelectMatchweek}
         summary={matchdayData?.summary}
         activeFilter={activeFilter}
-        onSelectFilter={setActiveFilter}
+        onSelectFilter={(f) => setActiveFilter(f)}
         activeView={activeView}
-        onSelectView={setActiveView}
+        onSelectView={(v) => setActiveView(v)}
         isLightMode={isLightMode}
         onToggleTheme={toggleTheme}
       />
@@ -99,7 +110,7 @@ export function App() {
                 <AlertCircle size={44} className="error-icon" />
                 <h3 className="error-title">Failed to Load Matchday Data</h3>
                 <p className="error-desc">{error}</p>
-                <button className="btn-primary retry-btn" onClick={fetchMatchday}>
+                <button className="btn-primary retry-btn" onClick={() => fetchMatchday(selectedMatchweek)}>
                   <RefreshCw size={16} />
                   <span>Retry Calculation</span>
                 </button>

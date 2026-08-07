@@ -15,74 +15,237 @@ from premier_league_predictor.prediction import predict_fixtures
 from premier_league_predictor.api_football import fetch_api, LEAGUE_ID, get_mapped_team_name, API_FOOTBALL_KEY
 
 CONFIG_PATH = "configs/test_xg_efficient.yaml"
+FIXTURES_FILE_PATH = Path("data/raw/premier/fixtures-26-27.csv")
 
-# Default fallback 2026-27 Gameweek 1 Fixtures
+TEAM_STADIUMS = {
+    "Arsenal": "Emirates Stadium",
+    "Aston Villa": "Villa Park",
+    "Bournemouth": "Vitality Stadium",
+    "Brentford": "Gtech Community Stadium",
+    "Brighton": "Amex Stadium",
+    "Chelsea": "Stamford Bridge",
+    "Coventry": "Coventry Building Society Arena",
+    "Crystal Palace": "Selhurst Park",
+    "Everton": "Everton Stadium",
+    "Fulham": "Craven Cottage",
+    "Hull": "MKM Stadium",
+    "Ipswich": "Portman Road",
+    "Leeds": "Elland Road",
+    "Leicester": "King Power Stadium",
+    "Liverpool": "Anfield",
+    "Manchester City": "Etihad Stadium",
+    "Manchester United": "Old Trafford",
+    "Newcastle United": "St. James' Park",
+    "Nottingham Forest": "The City Ground",
+    "Southampton": "St Mary's Stadium",
+    "Sunderland": "Stadium of Light",
+    "Tottenham": "Tottenham Hotspur Stadium",
+    "West Ham": "London Stadium",
+    "Wolverhampton Wanderers": "Molineux Stadium",
+}
+
+# Fallback default 2026-27 Gameweek 1 Fixtures
 DEFAULT_FIXTURES_2026 = [
-    {"fixture_id": 101, "HomeTeam": "Arsenal", "AwayTeam": "Chelsea", "Date": "15/08/2026", "Time": "12:30", "Venue": "Emirates Stadium"},
-    {"fixture_id": 102, "HomeTeam": "Manchester City", "AwayTeam": "Tottenham", "Date": "15/08/2026", "Time": "15:00", "Venue": "Etihad Stadium"},
-    {"fixture_id": 103, "HomeTeam": "Liverpool", "AwayTeam": "Bournemouth", "Date": "15/08/2026", "Time": "15:00", "Venue": "Anfield"},
-    {"fixture_id": 104, "HomeTeam": "Manchester United", "AwayTeam": "Aston Villa", "Date": "15/08/2026", "Time": "15:00", "Venue": "Old Trafford"},
-    {"fixture_id": 105, "HomeTeam": "Newcastle United", "AwayTeam": "Everton", "Date": "15/08/2026", "Time": "15:00", "Venue": "St. James' Park"},
-    {"fixture_id": 106, "HomeTeam": "Brighton", "AwayTeam": "Fulham", "Date": "15/08/2026", "Time": "15:00", "Venue": "Amex Stadium"},
-    {"fixture_id": 107, "HomeTeam": "West Ham", "AwayTeam": "Brentford", "Date": "15/08/2026", "Time": "17:30", "Venue": "London Stadium"},
-    {"fixture_id": 108, "HomeTeam": "Nottingham Forest", "AwayTeam": "Crystal Palace", "Date": "16/08/2026", "Time": "14:00", "Venue": "City Ground"},
-    {"fixture_id": 109, "HomeTeam": "Wolverhampton Wanderers", "AwayTeam": "Ipswich", "Date": "16/08/2026", "Time": "16:30", "Venue": "Molineux Stadium"},
-    {"fixture_id": 110, "HomeTeam": "Leeds", "AwayTeam": "Southampton", "Date": "17/08/2026", "Time": "20:00", "Venue": "Elland Road"},
+    {"fixture_id": 1, "HomeTeam": "Arsenal", "AwayTeam": "Coventry", "Date": "21/08/2026", "Time": "20:00", "Venue": "Emirates Stadium", "Broadcaster": "Sky Sports"},
+    {"fixture_id": 2, "HomeTeam": "Hull", "AwayTeam": "Manchester United", "Date": "22/08/2026", "Time": "12:30", "Venue": "MKM Stadium", "Broadcaster": "TNT Sports"},
+    {"fixture_id": 3, "HomeTeam": "Everton", "AwayTeam": "Crystal Palace", "Date": "22/08/2026", "Time": "15:00", "Venue": "Everton Stadium", "Broadcaster": None},
+    {"fixture_id": 4, "HomeTeam": "Ipswich", "AwayTeam": "Sunderland", "Date": "22/08/2026", "Time": "15:00", "Venue": "Portman Road", "Broadcaster": None},
+    {"fixture_id": 5, "HomeTeam": "Nottingham Forest", "AwayTeam": "Leeds", "Date": "22/08/2026", "Time": "15:00", "Venue": "The City Ground", "Broadcaster": None},
+    {"fixture_id": 6, "HomeTeam": "Brentford", "AwayTeam": "Tottenham", "Date": "22/08/2026", "Time": "17:30", "Venue": "Gtech Community Stadium", "Broadcaster": "Sky Sports"},
+    {"fixture_id": 7, "HomeTeam": "Brighton", "AwayTeam": "Aston Villa", "Date": "23/08/2026", "Time": "14:00", "Venue": "Amex Stadium", "Broadcaster": "Sky Sports"},
+    {"fixture_id": 8, "HomeTeam": "Manchester City", "AwayTeam": "Bournemouth", "Date": "23/08/2026", "Time": "14:00", "Venue": "Etihad Stadium", "Broadcaster": "Sky Sports"},
+    {"fixture_id": 9, "HomeTeam": "Newcastle United", "AwayTeam": "Liverpool", "Date": "23/08/2026", "Time": "16:30", "Venue": "St. James' Park", "Broadcaster": "Sky Sports"},
+    {"fixture_id": 10, "HomeTeam": "Fulham", "AwayTeam": "Chelsea", "Date": "24/08/2026", "Time": "20:00", "Venue": "Craven Cottage", "Broadcaster": "Sky Sports"},
 ]
 
 
-def get_current_matchday_fixtures() -> tuple[str, str, list[dict[str, Any]]]:
-    """Fetch active matchday fixtures from API-Football or return curated season fixtures."""
-    round_name = "Gameweek 1"
+def get_current_matchday_fixtures(matchweek: int = 1) -> tuple[str, str, list[dict[str, Any]], list[int], int]:
+    """
+    Fetch active matchday fixtures from the official 2026/27 fixture list or fallbacks.
+    Returns (round_name, season_name, matches, available_matchweeks, current_matchweek).
+    """
+    available_matchweeks = list(range(1, 39))
+    current_mw = matchweek if matchweek and 1 <= matchweek <= 38 else 1
+    round_name = f"Gameweek {current_mw}"
     season_name = "2026/27"
-    
-    if API_FOOTBALL_KEY:
+
+    if FIXTURES_FILE_PATH.exists():
         try:
-            # Query current round
-            rounds_data = fetch_api("fixtures/rounds", {"league": LEAGUE_ID, "season": 2025, "current": "true"})
-            if rounds_data and "response" in rounds_data and rounds_data["response"]:
-                current_round = rounds_data["response"][0]
-                fixtures_data = fetch_api("fixtures", {"league": LEAGUE_ID, "season": 2025, "round": current_round})
-                if fixtures_data and "response" in fixtures_data and fixtures_data["response"]:
-                    matches = []
-                    for item in fixtures_data["response"][:10]:
-                        fix = item["fixture"]
-                        dt_raw = fix.get("date", "")
-                        d_str = "15/08/2026"
-                        t_str = "15:00"
-                        if dt_raw and len(dt_raw) >= 10:
-                            y, m, d = dt_raw[:10].split("-")
+            df = pd.read_csv(FIXTURES_FILE_PATH)
+            if "matchweek" in df.columns:
+                available_matchweeks = sorted(df["matchweek"].dropna().unique().astype(int).tolist())
+                df_mw = df[df["matchweek"] == current_mw]
+                
+                matches = []
+                for _, row in df_mw.iterrows():
+                    h_norm = normalize_team_name(str(row.get("home_team", "")))
+                    a_norm = normalize_team_name(str(row.get("away_team", "")))
+                    venue = TEAM_STADIUMS.get(h_norm, f"{h_norm} Stadium")
+                    
+                    raw_date = str(row.get("date", "2026-08-21"))
+                    if "-" in raw_date:
+                        parts = raw_date.split("-")
+                        if len(parts) == 3:
+                            y, m, d = parts
                             d_str = f"{d}/{m}/{y}"
-                            t_str = dt_raw[11:16] if len(dt_raw) >= 16 else "15:00"
+                        else:
+                            d_str = raw_date
+                    else:
+                        d_str = raw_date
                         
-                        h_team = get_mapped_team_name(item["teams"]["home"]["name"])
-                        a_team = get_mapped_team_name(item["teams"]["away"]["name"])
-                        venue = fix.get("venue", {}).get("name", "Premier League Ground")
-                        
-                        matches.append({
-                            "fixture_id": fix.get("id", len(matches) + 1),
-                            "HomeTeam": h_team,
-                            "AwayTeam": a_team,
-                            "Date": d_str,
-                            "Time": t_str,
-                            "Venue": venue,
-                        })
-                    if matches:
-                        return current_round, "2025/26", matches
+                    raw_time = str(row.get("kickoff_time_uk", "15:00"))
+                    t_str = "15:00" if raw_time == "TBC" or pd.isna(row.get("kickoff_time_uk")) else raw_time
+                    broadcaster = row.get("tv_broadcaster") if pd.notna(row.get("tv_broadcaster")) and row.get("tv_broadcaster") else None
+
+                    matches.append({
+                        "fixture_id": int(row.get("match_number", len(matches) + 1)),
+                        "HomeTeam": h_norm,
+                        "AwayTeam": a_norm,
+                        "Date": d_str,
+                        "Time": t_str,
+                        "Venue": venue,
+                        "Broadcaster": broadcaster,
+                    })
+
+                if matches:
+                    return round_name, season_name, matches, available_matchweeks, current_mw
         except Exception as e:
-            print(f"Failed to fetch live matchday from API-Football: {e}")
-            
-    return round_name, season_name, DEFAULT_FIXTURES_2026
+            print(f"Error loading fixtures file {FIXTURES_FILE_PATH}: {e}")
+
+    return round_name, season_name, DEFAULT_FIXTURES_2026, available_matchweeks, current_mw
+
+
+EFL_FILE_PATHS = [
+    Path("data/raw/premier/EFL_Championship_25_26_xG.csv"),
+    Path("data/raw/premier/championship_2025_26.csv"),
+    Path("data/raw/championship_2025_26_xg.csv"),
+]
+_efl_cache: pd.DataFrame | None = None
+
+
+def _get_efl_data() -> pd.DataFrame | None:
+    """Load and cache 2025/26 EFL Championship match logs with xG."""
+    global _efl_cache
+    if _efl_cache is not None:
+        return _efl_cache
+    for p in EFL_FILE_PATHS:
+        if p.exists():
+            try:
+                df = pd.read_csv(p)
+                # Standardize column names
+                col_map = {}
+                for c in df.columns:
+                    c_clean = c.strip().lower().replace(" ", "_")
+                    if c_clean in ["home_team", "home"]:
+                        col_map[c] = "Home"
+                    elif c_clean in ["away_team", "away"]:
+                        col_map[c] = "Away"
+                    elif c_clean in ["home_goals", "fthg", "h_goals"]:
+                        col_map[c] = "HomeGoals"
+                    elif c_clean in ["away_goals", "ftag", "a_goals"]:
+                        col_map[c] = "AwayGoals"
+                    elif c_clean in ["home_xg", "hxg", "xg_home"]:
+                        col_map[c] = "HomeXG"
+                    elif c_clean in ["away_xg", "axg", "xg_away"]:
+                        col_map[c] = "AwayXG"
+                    elif c_clean in ["score"]:
+                        col_map[c] = "Score"
+                
+                df = df.rename(columns=col_map)
+                if "Home" in df.columns and "Away" in df.columns:
+                    df = df.dropna(subset=["Home", "Away"])
+                    df["HomeNorm"] = df["Home"].apply(normalize_team_name)
+                    df["AwayNorm"] = df["Away"].apply(normalize_team_name)
+                    _efl_cache = df
+                    return _efl_cache
+            except Exception as e:
+                print(f"Error loading EFL file {p}: {e}")
+    return None
 
 
 def compute_quick_facts(home_team: str, away_team: str, df_history: pd.DataFrame) -> dict[str, Any]:
     """Compute recent form, H2H, season splits, and Elo metrics."""
     h_norm = normalize_team_name(home_team)
     a_norm = normalize_team_name(away_team)
+    df_efl = _get_efl_data()
     
     # 1. Recent Form (last 5 matches for each team)
     def _get_form(team_name: str) -> list[dict[str, Any]]:
         t_matches = df_history[(df_history["HomeTeam"] == team_name) | (df_history["AwayTeam"] == team_name)]
+        
+        # Check if team is a newly promoted side (Coventry, Hull, Ipswich, etc.) or has no recent PL matches
+        use_efl = False
+        if t_matches.empty:
+            use_efl = True
+        elif team_name in ["Coventry", "Hull", "Ipswich"]:
+            use_efl = True
+            
+        if use_efl and df_efl is not None:
+            efl_matches = df_efl[(df_efl["HomeNorm"] == team_name) | (df_efl["AwayNorm"] == team_name)]
+            if not efl_matches.empty:
+                last_5 = efl_matches.tail(5)
+                form_list = []
+                for _, row in last_5.iterrows():
+                    is_home = (row["HomeNorm"] == team_name)
+                    
+                    # Parse goals
+                    if "HomeGoals" in row and pd.notna(row["HomeGoals"]) and "AwayGoals" in row and pd.notna(row["AwayGoals"]):
+                        try:
+                            h_g = int(row["HomeGoals"])
+                            a_g = int(row["AwayGoals"])
+                        except (ValueError, TypeError):
+                            h_g, a_g = 0, 0
+                    elif "Score" in row and pd.notna(row["Score"]):
+                        score_str = str(row["Score"]).replace("–", "-").strip()
+                        parts = score_str.split("-")
+                        if len(parts) == 2:
+                            try:
+                                h_g, a_g = int(parts[0]), int(parts[1])
+                            except ValueError:
+                                h_g, a_g = 0, 0
+                        else:
+                            h_g, a_g = 0, 0
+                    else:
+                        h_g, a_g = 0, 0
+                        
+                    gf = h_g if is_home else a_g
+                    ga = a_g if is_home else h_g
+                    opp = row["AwayNorm"] if is_home else row["HomeNorm"]
+                    
+                    if gf > ga:
+                        res = "W"
+                    elif gf == ga:
+                        res = "D"
+                    else:
+                        res = "L"
+                        
+                    # Parse or calibrate xG
+                    xg_f = None
+                    xg_a = None
+                    if "HomeXG" in row and pd.notna(row["HomeXG"]) and "AwayXG" in row and pd.notna(row["AwayXG"]):
+                        try:
+                            xg_f = float(row["HomeXG"]) if is_home else float(row["AwayXG"])
+                            xg_a = float(row["AwayXG"]) if is_home else float(row["HomeXG"])
+                        except (ValueError, TypeError):
+                            pass
+                            
+                    if xg_f is None or pd.isna(xg_f):
+                        xg_f = round(max(0.4, gf * 0.85 + 0.3), 2)
+                    if xg_a is None or pd.isna(xg_a):
+                        xg_a = round(max(0.3, ga * 0.85 + 0.3), 2)
+                        
+                    form_list.append({
+                        "result": res,
+                        "opponent": opp,
+                        "score": f"{gf}-{ga}",
+                        "is_home": is_home,
+                        "date": str(row.get("Date", "")),
+                        "xg_for": round(xg_f, 2),
+                        "xg_against": round(xg_a, 2),
+                        "league": "EFL Championship",
+                    })
+                return form_list
+
         if t_matches.empty:
             return []
         
@@ -90,8 +253,18 @@ def compute_quick_facts(home_team: str, away_team: str, df_history: pd.DataFrame
         form_list = []
         for _, row in last_5.iterrows():
             is_home = (row["HomeTeam"] == team_name)
-            gf = int(row["FTHG"]) if is_home else int(row["FTAG"])
-            ga = int(row["FTAG"]) if is_home else int(row["FTHG"])
+            
+            # Extract goals safely
+            h_val = row.get("goals_home", row.get("FTHG", row.get("HomeGoals", 0)))
+            a_val = row.get("goals_away", row.get("FTAG", row.get("AwayGoals", 0)))
+            try:
+                h_goals = int(h_val) if pd.notna(h_val) else 0
+                a_goals = int(a_val) if pd.notna(a_val) else 0
+            except (ValueError, TypeError):
+                h_goals, a_goals = 0, 0
+                
+            gf = h_goals if is_home else a_goals
+            ga = a_goals if is_home else h_goals
             opp = row["AwayTeam"] if is_home else row["HomeTeam"]
             
             if gf > ga:
@@ -112,6 +285,7 @@ def compute_quick_facts(home_team: str, away_team: str, df_history: pd.DataFrame
                 "date": str(row.get("Date", "")),
                 "xg_for": round(xg_f, 2),
                 "xg_against": round(xg_a, 2),
+                "league": "Premier League",
             })
         return form_list
 
@@ -135,13 +309,21 @@ def compute_quick_facts(home_team: str, away_team: str, df_history: pd.DataFrame
     
     for _, row in h2h_matches.iterrows():
         is_h_home = (row["HomeTeam"] == h_norm)
-        h_g = int(row["FTHG"]) if is_h_home else int(row["FTAG"])
-        a_g = int(row["FTAG"]) if is_h_home else int(row["FTHG"])
+        h_val = row.get("goals_home", row.get("FTHG", row.get("HomeGoals", 0)))
+        a_val = row.get("goals_away", row.get("FTAG", row.get("AwayGoals", 0)))
+        try:
+            h_g = int(h_val) if pd.notna(h_val) else 0
+            a_g = int(a_val) if pd.notna(a_val) else 0
+        except (ValueError, TypeError):
+            h_g, a_g = 0, 0
+            
+        h_res_g = h_g if is_h_home else a_g
+        a_res_g = a_g if is_h_home else h_g
         
-        if h_g > a_g:
+        if h_res_g > a_res_g:
             h_wins += 1
             winner = h_norm
-        elif h_g == a_g:
+        elif h_res_g == a_res_g:
             draws += 1
             winner = "Draw"
         else:
@@ -149,29 +331,97 @@ def compute_quick_facts(home_team: str, away_team: str, df_history: pd.DataFrame
             winner = a_norm
             
     for _, row in h2h_matches.tail(5).iterrows():
+        h_val = row.get("goals_home", row.get("FTHG", row.get("HomeGoals", 0)))
+        a_val = row.get("goals_away", row.get("FTAG", row.get("AwayGoals", 0)))
+        try:
+            hg = int(h_val) if pd.notna(h_val) else 0
+            ag = int(a_val) if pd.notna(a_val) else 0
+        except (ValueError, TypeError):
+            hg, ag = 0, 0
+            
+        if hg > ag:
+            w_team = row["HomeTeam"]
+        elif hg == ag:
+            w_team = "Draw"
+        else:
+            w_team = row["AwayTeam"]
+            
         recent_h2h.append({
             "date": str(row.get("Date", "")),
             "home_team": row["HomeTeam"],
             "away_team": row["AwayTeam"],
-            "score": f"{int(row['FTHG'])}-{int(row['FTAG'])}",
-            "winner": h_norm if (row["FTR"] == "H" if row["HomeTeam"] == h_norm else row["FTR"] == "A") else ("Draw" if row["FTR"] == "D" else a_norm)
+            "score": f"{hg}-{ag}",
+            "winner": w_team,
         })
 
     # 3. Season Splits (Home Team at Home vs Away Team Away)
     h_home_games = df_history[df_history["HomeTeam"] == h_norm].tail(19)
     a_away_games = df_history[df_history["AwayTeam"] == a_norm].tail(19)
     
-    def _calc_split(games: pd.DataFrame, is_home: bool) -> dict[str, Any]:
+    def _calc_split(games: pd.DataFrame, team_name: str, is_home: bool) -> dict[str, Any]:
+        if games.empty and df_efl is not None:
+            # Calibrate from 2025/26 Championship season with 0.68 conversion factor
+            norm_col = "HomeNorm" if is_home else "AwayNorm"
+            efl_t_games = df_efl[df_efl[norm_col] == team_name].tail(19)
+            if not efl_t_games.empty:
+                w = 0
+                d = 0
+                gfs = []
+                gas = []
+                for _, row in efl_t_games.iterrows():
+                    if "HomeGoals" in row and pd.notna(row["HomeGoals"]) and "AwayGoals" in row and pd.notna(row["AwayGoals"]):
+                        try:
+                            hg = int(row["HomeGoals"])
+                            ag = int(row["AwayGoals"])
+                        except (ValueError, TypeError):
+                            hg, ag = 0, 0
+                    else:
+                        score_str = str(row.get("Score", "")).replace("–", "-").strip()
+                        parts = score_str.split("-")
+                        if len(parts) == 2:
+                            try:
+                                hg, ag = int(parts[0]), int(parts[1])
+                            except ValueError:
+                                hg, ag = 0, 0
+                        else:
+                            hg, ag = 0, 0
+                            
+                    gf = hg if is_home else ag
+                    ga = ag if is_home else hg
+                    if gf > ga:
+                        w += 1
+                    elif gf == ga:
+                        d += 1
+                    gfs.append(gf)
+                    gas.append(ga)
+                n = len(gfs)
+                if n > 0:
+                    l = n - w - d
+                    # Apply promotion conversion factor (0.68)
+                    return {
+                        "matches": n,
+                        "wins": w,
+                        "draws": d,
+                        "losses": l,
+                        "win_pct": round((w / n) * 100 * 0.68, 1),
+                        "avg_gf": round((sum(gfs) / n) * 0.70, 2),
+                        "avg_ga": round((sum(gas) / n) * 1.30, 2),
+                        "avg_xg": round((sum(gfs) / n) * 0.70, 2),
+                    }
+
         if games.empty:
             return {"matches": 0, "wins": 0, "draws": 0, "losses": 0, "win_pct": 0, "avg_gf": 0.0, "avg_ga": 0.0, "avg_xg": 0.0}
         n = len(games)
-        target_res = "H" if is_home else "A"
-        gf_col = "FTHG" if is_home else "FTAG"
-        ga_col = "FTAG" if is_home else "FTHG"
+        
+        gf_col = "goals_home" if "goals_home" in games.columns else ("FTHG" if "FTHG" in games.columns else "HomeGoals")
+        ga_col = "goals_away" if "goals_away" in games.columns else ("FTAG" if "FTAG" in games.columns else "AwayGoals")
+        if not is_home:
+            gf_col, ga_col = ga_col, gf_col
+            
         xg_col = "HXG" if is_home else "AXG"
         
-        w = int((games["FTR"] == target_res).sum())
-        d = int((games["FTR"] == "D").sum())
+        w = int((games[gf_col] > games[ga_col]).sum()) if gf_col in games.columns and ga_col in games.columns else 0
+        d = int((games[gf_col] == games[ga_col]).sum()) if gf_col in games.columns and ga_col in games.columns else 0
         l = n - w - d
         avg_gf = float(games[gf_col].mean()) if gf_col in games.columns else 0.0
         avg_ga = float(games[ga_col].mean()) if ga_col in games.columns else 0.0
@@ -188,8 +438,8 @@ def compute_quick_facts(home_team: str, away_team: str, df_history: pd.DataFrame
             "avg_xg": round(avg_xg, 2),
         }
 
-    home_split = _calc_split(h_home_games, is_home=True)
-    away_split = _calc_split(a_away_games, is_home=False)
+    home_split = _calc_split(h_home_games, h_norm, is_home=True)
+    away_split = _calc_split(a_away_games, a_norm, is_home=False)
 
     # 4. Approximate Elo
     elo_base = 1500
@@ -312,9 +562,9 @@ def compute_model_explainability(
     }
 
 
-def get_matchday_overview() -> dict[str, Any]:
+def get_matchday_overview(matchweek: int = 1) -> dict[str, Any]:
     """Assemble complete matchday data with predictions, quick facts, and explainability."""
-    round_name, season_name, fixtures = get_current_matchday_fixtures()
+    round_name, season_name, fixtures, available_matchweeks, current_mw = get_current_matchday_fixtures(matchweek)
     config = load_config(CONFIG_PATH)
     df_history = load_matches(
         csv_path=config["data"].get("csv_path"),
@@ -365,9 +615,10 @@ def get_matchday_overview() -> dict[str, Any]:
             "fixture_id": fix.get("fixture_id", i + 1),
             "home_team": normalize_team_name(fix["HomeTeam"]),
             "away_team": normalize_team_name(fix["AwayTeam"]),
-            "date": fix.get("Date", "15/08/2026"),
+            "date": fix.get("Date", "21/08/2026"),
             "time": fix.get("Time", "15:00"),
             "venue": fix.get("Venue", "Premier League"),
+            "broadcaster": fix.get("Broadcaster"),
             "prediction": pred,
             "prob_home": round(prob_h, 3),
             "prob_draw": round(prob_d, 3),
@@ -382,6 +633,8 @@ def get_matchday_overview() -> dict[str, Any]:
     return {
         "round": round_name,
         "season": season_name,
+        "current_matchweek": current_mw,
+        "available_matchweeks": available_matchweeks,
         "total_fixtures": len(matches_payload),
         "summary": {
             "predicted_home_wins": home_wins,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Clock, MapPin, Sparkles } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, Sparkles, Tv } from 'lucide-react';
 import type { MatchFixture } from '../types/matchday';
 import { getTeamLogo } from '../utils/teamAssets';
 
@@ -37,6 +37,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
         <div className="meta-time">
           <Clock size={13} />
           <span>{match.date} • {match.time}</span>
+          {match.broadcaster && (
+            <span className="broadcaster-pill">
+              <Tv size={11} />
+              {match.broadcaster}
+            </span>
+          )}
         </div>
         <div className={`confidence-tag ${match.confidence_class}`}>
           {match.confidence_class === 'confidence-high' && <Sparkles size={11} />}

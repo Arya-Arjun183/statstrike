@@ -97,6 +97,18 @@ CANONICAL_TEAM_NAMES: dict[str, str] = {
     "swansea": "Swansea",
     "swansea city": "Swansea",
     
+    # Bournemouth
+    "afc bournemouth": "Bournemouth",
+    "bournemouth": "Bournemouth",
+
+    # Coventry
+    "coventry": "Coventry",
+    "coventry city": "Coventry",
+
+    # Sunderland
+    "sunderland": "Sunderland",
+    "sunderland afc": "Sunderland",
+
     # Hull
     "hull": "Hull",
     "hull city": "Hull",

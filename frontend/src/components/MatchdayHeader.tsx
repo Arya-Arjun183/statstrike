@@ -1,11 +1,15 @@
 import React from 'react';
-import { Calendar, Trophy, Moon, Sun, Layers, Sparkles } from 'lucide-react';
+import { Calendar, Moon, Sun, Layers, Sparkles } from 'lucide-react';
+import { StatStrikeLogo } from './StatStrikeLogo';
 import type { MatchdaySummary } from '../types/matchday';
 
 interface MatchdayHeaderProps {
   round: string;
   season: string;
   totalFixtures: number;
+  currentMatchweek?: number;
+  availableMatchweeks?: number[];
+  onSelectMatchweek?: (mw: number) => void;
   summary?: MatchdaySummary;
   activeFilter: 'all' | 'high_conf' | 'toss_up';
   onSelectFilter: (filter: 'all' | 'high_conf' | 'toss_up') => void;
@@ -19,6 +23,9 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
   round,
   season,
   totalFixtures,
+  currentMatchweek = 1,
+  availableMatchweeks = [1],
+  onSelectMatchweek,
   summary,
   activeFilter,
   onSelectFilter,
@@ -32,7 +39,7 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
       <div className="header-top-row">
         <div className="brand-group">
           <div className="brand-badge">
-            <Trophy className="brand-icon" size={24} />
+            <StatStrikeLogo size={36} />
             <div className="brand-info">
               <h1 className="brand-title">StatStrike</h1>
               <span className="brand-subtitle">Premier League ML Intelligence</span>
@@ -76,6 +83,23 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
               <span className="live-pulse-dot"></span>
               <h2 className="matchday-round-title">{round}</h2>
               <span className="season-pill">{season}</span>
+              
+              {availableMatchweeks && availableMatchweeks.length > 1 && onSelectMatchweek && (
+                <div className="gameweek-select-wrapper">
+                  <select
+                    className="gameweek-dropdown"
+                    value={currentMatchweek}
+                    onChange={(e) => onSelectMatchweek(Number(e.target.value))}
+                    aria-label="Select Gameweek"
+                  >
+                    {availableMatchweeks.map((mw) => (
+                      <option key={mw} value={mw}>
+                        Gameweek {mw}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <p className="matchday-desc">
               Algorithmic match outcomes, Poisson score distributions, and statistical driver breakdowns for all {totalFixtures} Premier League fixtures.

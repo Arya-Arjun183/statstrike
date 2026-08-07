@@ -90,6 +90,7 @@ export interface MatchFixture {
   date: string;
   time: string;
   venue: string;
+  broadcaster?: string | null;
   prediction: 'H' | 'D' | 'A';
   prob_home: number;
   prob_draw: number;
@@ -110,6 +111,8 @@ export interface MatchdaySummary {
 export interface MatchdayOverview {
   round: string;
   season: string;
+  current_matchweek?: number;
+  available_matchweeks?: number[];
   total_fixtures: number;
   summary: MatchdaySummary;
   matches: MatchFixture[];

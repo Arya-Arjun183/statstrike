@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -48,10 +48,10 @@ def health_check():
 
 @app.get("/api/matchday")
 @app.get("/matchday")
-def matchday():
+def matchday(matchweek: int = Query(default=1, ge=1, le=38)):
     """Retrieve full matchday predictions, quick facts, and explainability."""
     try:
-        return get_matchday_overview()
+        return get_matchday_overview(matchweek=matchweek)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
