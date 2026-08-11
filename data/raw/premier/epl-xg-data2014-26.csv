@@ -4429,7 +4429,7 @@ Date,HomeTeam,AwayTeam,goals_home,goals_away,HXG,AXG
 29/11/2025,Manchester City,Leeds,3,2,2.85292,1.75142
 29/11/2025,Brentford,Burnley,3,1,3.72106,0.874025
 29/11/2025,Tottenham,Fulham,1,2,1.04396,0.494736
-30/11/2025,Crystal Palace,Manchester United,1,2,0.0,0.0
+30/11/2025,Crystal Palace,Manchester United,1,2,2.14,1.48
 30/11/2025,Nottingham Forest,Brighton,0,2,0.960325,2.0572
 30/11/2025,Chelsea,Arsenal,1,1,0.791914,1.22828
 30/11/2025,Chelsea,Arsenal,1,1,0.791914,1.22828
@@ -4578,250 +4578,250 @@ Date,HomeTeam,AwayTeam,goals_home,goals_away,HXG,AXG
 02/12/2025,Bournemouth,Everton,0,1,0.64,1.42
 02/12/2025,Fulham,Manchester City,4,5,2.48,2.07
 02/12/2025,Newcastle United,Tottenham,2,2,2.75,1.2
-03/12/2025,Arsenal,Brentford,2,0,2.45,0.61
-03/12/2025,Brighton,Aston Villa,3,4,2.66,3.38
-03/12/2025,Burnley,Crystal Palace,0,1,1.34,0.98
-03/12/2025,Wolverhampton Wanderers,Nottingham Forest,0,1,0.47,1.36
-03/12/2025,Leeds,Chelsea,3,1,2.26,1.17
-03/12/2025,Liverpool,Sunderland,1,1,2.05,1.83
-04/12/2025,Manchester United,West Ham,1,1,1.79,1.34
-06/12/2025,Aston Villa,Arsenal,2,1,2.22,2.7
-06/12/2025,Bournemouth,Chelsea,0,0,1.67,1.28
-06/12/2025,Everton,Nottingham Forest,3,0,2.06,0.97
-06/12/2025,Manchester City,Sunderland,3,0,2.55,0.63
-06/12/2025,Newcastle United,Burnley,2,1,2.63,1.32
-06/12/2025,Tottenham,Brentford,2,0,2.51,0.49
-06/12/2025,Leeds,Liverpool,3,3,2.08,2.64
-07/12/2025,Brighton,West Ham,1,1,2.07,1.88
-07/12/2025,Fulham,Crystal Palace,1,2,1.59,1.87
-08/12/2025,Wolverhampton Wanderers,Manchester United,1,4,0.91,3.96
-13/12/2025,Chelsea,Everton,2,0,2.11,1.0
-13/12/2025,Liverpool,Brighton,2,0,1.9,0.81
-13/12/2025,Burnley,Fulham,2,3,2.82,1.61
-13/12/2025,Arsenal,Wolverhampton Wanderers,2,1,1.52,0.69
-14/12/2025,Crystal Palace,Manchester City,0,3,1.52,2.03
-14/12/2025,Nottingham Forest,Tottenham,3,0,2.37,0.51
-14/12/2025,Sunderland,Newcastle United,1,0,0.62,0.78
-14/12/2025,West Ham,Aston Villa,2,3,1.43,1.63
-14/12/2025,Brentford,Leeds,1,1,0.85,1.77
-15/12/2025,Manchester United,Bournemouth,4,4,3.59,3.13
-20/12/2025,Newcastle United,Chelsea,2,2,1.91,1.74
-20/12/2025,Bournemouth,Burnley,1,1,1.1,0.58
-20/12/2025,Brighton,Sunderland,0,0,1.54,1.9
-20/12/2025,Manchester City,West Ham,3,0,2.93,0.91
-20/12/2025,Wolverhampton Wanderers,Brentford,0,2,0.84,1.92
-20/12/2025,Tottenham,Liverpool,1,2,1.63,1.58
-20/12/2025,Everton,Arsenal,0,1,0.45,1.15
-20/12/2025,Leeds,Crystal Palace,4,1,3.26,1.24
-21/12/2025,Aston Villa,Manchester United,2,1,1.72,2.11
-22/12/2025,Fulham,Nottingham Forest,1,0,0.82,1.0
-26/12/2025,Manchester United,Newcastle United,1,0,1.43,1.49
-27/12/2025,Nottingham Forest,Manchester City,1,2,0.95,2.09
-27/12/2025,Arsenal,Brighton,2,1,2.66,1.14
-27/12/2025,Brentford,Bournemouth,4,1,2.71,3.35
-27/12/2025,Burnley,Everton,0,0,0.76,1.96
-27/12/2025,Liverpool,Wolverhampton Wanderers,2,1,1.82,1.43
-27/12/2025,West Ham,Fulham,0,1,0.96,1.67
-27/12/2025,Chelsea,Aston Villa,1,2,1.46,2.56
-28/12/2025,Sunderland,Leeds,1,1,1.16,2.27
-28/12/2025,Crystal Palace,Tottenham,0,1,1.08,1.35
-30/12/2025,Burnley,Newcastle United,1,3,1.65,3.22
-30/12/2025,Chelsea,Bournemouth,2,2,1.85,2.3
-30/12/2025,Nottingham Forest,Everton,0,2,2.28,1.41
-30/12/2025,West Ham,Brighton,2,2,1.64,2.3
-30/12/2025,Arsenal,Aston Villa,4,1,3.01,1.28
-30/12/2025,Manchester United,Wolverhampton Wanderers,1,1,2.17,1.51
-01/01/2026,Crystal Palace,Fulham,1,1,1.13,1.94
-01/01/2026,Liverpool,Leeds,0,0,1.76,0.64
-01/01/2026,Brentford,Tottenham,0,0,0.76,1.01
-01/01/2026,Sunderland,Manchester City,0,0,1.3,1.5
-03/01/2026,Aston Villa,Nottingham Forest,3,1,1.81,1.68
-03/01/2026,Brighton,Burnley,2,0,1.82,0.91
-03/01/2026,Wolverhampton Wanderers,West Ham,3,0,2.69,0.38
-03/01/2026,Bournemouth,Arsenal,2,3,1.67,2.08
-04/01/2026,Leeds,Manchester United,1,1,1.34,1.25
-04/01/2026,Everton,Brentford,2,4,2.2,2.61
-04/01/2026,Newcastle United,Crystal Palace,2,0,2.41,0.77
-04/01/2026,Tottenham,Sunderland,1,1,1.78,1.28
-04/01/2026,Fulham,Liverpool,2,2,1.1,1.28
-04/01/2026,Manchester City,Chelsea,1,1,1.5,1.14
-06/01/2026,West Ham,Nottingham Forest,1,2,1.46,1.97
-07/01/2026,Bournemouth,Tottenham,3,2,1.58,1.92
-07/01/2026,Brentford,Sunderland,3,0,2.57,1.15
-07/01/2026,Crystal Palace,Aston Villa,0,0,1.55,1.33
-07/01/2026,Everton,Wolverhampton Wanderers,1,1,1.13,1.65
-07/01/2026,Fulham,Chelsea,2,1,2.03,2.19
-07/01/2026,Manchester City,Brighton,1,1,2.41,1.06
-07/01/2026,Burnley,Manchester United,2,2,0.83,3.72
-07/01/2026,Newcastle United,Leeds,4,3,3.16,2.35
-08/01/2026,Arsenal,Liverpool,0,0,1.26,0.32
-17/01/2026,Manchester United,Manchester City,2,0,2.23,0.61
-17/01/2026,Chelsea,Brentford,2,0,1.02,1.83
-17/01/2026,Leeds,Fulham,1,0,1.9,0.59
-17/01/2026,Liverpool,Burnley,1,1,3.92,0.66
-17/01/2026,Sunderland,Crystal Palace,2,1,2.35,0.89
-17/01/2026,Tottenham,West Ham,1,2,2.47,1.92
-17/01/2026,Nottingham Forest,Arsenal,0,0,0.32,1.41
-18/01/2026,Wolverhampton Wanderers,Newcastle United,0,0,0.74,1.04
-18/01/2026,Aston Villa,Everton,0,1,1.89,1.22
-19/01/2026,Brighton,Bournemouth,1,1,2.1,1.13
-24/01/2026,West Ham,Sunderland,3,1,2.08,0.91
-24/01/2026,Burnley,Tottenham,2,2,1.52,3.39
-24/01/2026,Fulham,Brighton,2,1,1.74,1.84
-24/01/2026,Manchester City,Wolverhampton Wanderers,2,0,1.66,0.77
-24/01/2026,Bournemouth,Liverpool,3,2,2.04,1.92
-25/01/2026,Brentford,Nottingham Forest,0,2,0.73,1.1
-25/01/2026,Crystal Palace,Chelsea,1,3,2.22,2.21
-25/01/2026,Newcastle United,Aston Villa,0,2,1.56,2.64
-25/01/2026,Arsenal,Manchester United,2,3,1.92,1.52
-26/01/2026,Everton,Leeds,1,1,1.26,1.63
-31/01/2026,Brighton,Everton,1,1,1.11,1.31
-31/01/2026,Leeds,Arsenal,0,4,0.41,3.08
-31/01/2026,Wolverhampton Wanderers,Bournemouth,0,2,2.25,1.62
-31/01/2026,Chelsea,West Ham,3,2,2.45,2.06
-31/01/2026,Liverpool,Newcastle United,4,1,2.89,1.11
-01/02/2026,Aston Villa,Brentford,0,1,2.37,0.83
-01/02/2026,Manchester United,Fulham,3,2,2.29,2.26
-01/02/2026,Nottingham Forest,Crystal Palace,1,1,0.82,1.48
-01/02/2026,Tottenham,Manchester City,2,2,2.1,1.61
-02/02/2026,Sunderland,Burnley,3,0,2.08,0.24
-06/02/2026,Leeds,Nottingham Forest,3,1,2.16,2.25
-07/02/2026,Manchester United,Tottenham,2,0,3.46,0.49
-07/02/2026,Arsenal,Sunderland,3,0,2.24,0.87
-07/02/2026,Bournemouth,Aston Villa,1,1,3.06,1.35
-07/02/2026,Burnley,West Ham,0,2,1.87,1.42
-07/02/2026,Fulham,Everton,1,2,1.42,1.69
-07/02/2026,Wolverhampton Wanderers,Chelsea,1,3,1.28,2.39
-07/02/2026,Newcastle United,Brentford,2,3,1.96,2.0
-08/02/2026,Brighton,Crystal Palace,0,1,0.76,1.35
-08/02/2026,Liverpool,Manchester City,1,2,1.69,2.53
-10/02/2026,Chelsea,Leeds,2,2,1.98,0.9
-10/02/2026,Everton,Bournemouth,1,2,2.19,1.62
-10/02/2026,Tottenham,Newcastle United,1,2,1.25,2.43
-10/02/2026,West Ham,Manchester United,1,1,1.16,1.2
-11/02/2026,Aston Villa,Brighton,1,0,1.1,1.09
-11/02/2026,Crystal Palace,Burnley,2,3,1.93,1.44
-11/02/2026,Manchester City,Fulham,3,0,2.1,1.27
-11/02/2026,Nottingham Forest,Wolverhampton Wanderers,0,0,3.66,0.95
-11/02/2026,Sunderland,Liverpool,0,1,0.92,1.92
-12/02/2026,Brentford,Arsenal,1,1,1.38,0.93
-18/02/2026,Wolverhampton Wanderers,Arsenal,2,2,0.94,1.6
-21/02/2026,Aston Villa,Leeds,1,1,1.77,1.59
-21/02/2026,Brentford,Brighton,0,2,1.27,2.29
-21/02/2026,Chelsea,Burnley,1,1,1.23,1.57
-21/02/2026,West Ham,Bournemouth,0,0,1.61,1.55
-21/02/2026,Manchester City,Newcastle United,2,1,2.47,2.24
-22/02/2026,Crystal Palace,Wolverhampton Wanderers,1,0,1.48,2.01
-22/02/2026,Nottingham Forest,Liverpool,0,1,1.28,1.43
-22/02/2026,Sunderland,Fulham,1,3,1.17,1.85
-22/02/2026,Tottenham,Arsenal,1,4,1.48,2.97
-23/02/2026,Everton,Manchester United,0,1,1.52,1.24
-27/02/2026,Wolverhampton Wanderers,Aston Villa,2,0,1.08,1.71
-28/02/2026,Bournemouth,Sunderland,1,1,2.18,1.37
-28/02/2026,Burnley,Brentford,3,4,1.64,2.87
-28/02/2026,Liverpool,West Ham,5,2,3.14,1.68
-28/02/2026,Newcastle United,Everton,2,3,2.59,1.9
-28/02/2026,Leeds,Manchester City,0,1,1.08,1.82
-01/03/2026,Brighton,Nottingham Forest,2,1,2.41,1.59
-01/03/2026,Fulham,Tottenham,2,1,1.96,1.04
-01/03/2026,Manchester United,Crystal Palace,2,1,3.55,1.12
-01/03/2026,Arsenal,Chelsea,2,1,1.93,1.34
-03/03/2026,Bournemouth,Brentford,0,0,1.02,0.68
-03/03/2026,Everton,Burnley,2,0,2.03,0.68
-03/03/2026,Leeds,Sunderland,0,1,1.74,0.52
-03/03/2026,Wolverhampton Wanderers,Liverpool,2,1,1.13,2.6
-04/03/2026,Aston Villa,Chelsea,1,4,1.41,3.04
-04/03/2026,Brighton,Arsenal,0,1,1.15,0.91
-04/03/2026,Fulham,West Ham,0,1,1.71,1.24
-04/03/2026,Manchester City,Nottingham Forest,2,2,2.73,1.52
-04/03/2026,Newcastle United,Manchester United,2,1,1.87,1.84
-05/03/2026,Tottenham,Crystal Palace,1,3,1.59,1.71
-14/03/2026,Burnley,Bournemouth,0,0,1.12,1.67
-14/03/2026,Sunderland,Brighton,0,1,1.54,1.53
-14/03/2026,Arsenal,Everton,2,0,2.93,1.05
-14/03/2026,Chelsea,Newcastle United,0,1,1.67,1.5
-14/03/2026,West Ham,Manchester City,1,1,0.42,2.67
-15/03/2026,Crystal Palace,Leeds,0,0,0.64,1.09
-15/03/2026,Manchester United,Aston Villa,3,1,2.47,1.05
-15/03/2026,Nottingham Forest,Fulham,0,0,0.96,0.28
-15/03/2026,Liverpool,Tottenham,1,1,1.73,2.22
-16/03/2026,Brentford,Wolverhampton Wanderers,2,2,1.35,1.76
-20/03/2026,Bournemouth,Manchester United,2,2,2.11,2.07
-21/03/2026,Brighton,Liverpool,2,1,2.49,1.84
-21/03/2026,Fulham,Burnley,3,1,2.71,1.68
-21/03/2026,Everton,Chelsea,3,0,2.8,1.5
-21/03/2026,Leeds,Brentford,0,0,1.52,0.7
-22/03/2026,Newcastle United,Sunderland,1,2,1.81,2.55
-22/03/2026,Aston Villa,West Ham,2,0,2.81,0.69
-22/03/2026,Tottenham,Nottingham Forest,0,3,1.45,2.3
-10/04/2026,West Ham,Wolverhampton Wanderers,4,0,2.89,1.23
-11/04/2026,Arsenal,Bournemouth,1,2,1.58,1.27
-11/04/2026,Brentford,Everton,2,2,1.86,2.39
-11/04/2026,Burnley,Brighton,0,2,1.61,2.12
-11/04/2026,Liverpool,Fulham,2,0,2.19,1.78
-12/04/2026,Crystal Palace,Newcastle United,2,1,1.83,1.14
-12/04/2026,Nottingham Forest,Aston Villa,1,1,1.73,1.74
-12/04/2026,Sunderland,Tottenham,1,0,1.13,2.03
-12/04/2026,Chelsea,Manchester City,0,3,1.19,3.09
-13/04/2026,Manchester United,Leeds,1,2,3.06,2.24
-18/04/2026,Brentford,Fulham,0,0,1.54,0.5
-18/04/2026,Leeds,Wolverhampton Wanderers,3,0,2.49,0.82
-18/04/2026,Newcastle United,Bournemouth,1,2,1.3,1.47
-18/04/2026,Tottenham,Brighton,2,2,2.22,1.43
-18/04/2026,Chelsea,Manchester United,0,1,1.61,0.54
-19/04/2026,Aston Villa,Sunderland,4,3,2.75,2.42
-19/04/2026,Everton,Liverpool,1,2,1.41,2.24
-19/04/2026,Nottingham Forest,Burnley,4,1,1.92,1.02
-19/04/2026,Manchester City,Arsenal,2,1,2.11,1.24
-20/04/2026,Crystal Palace,West Ham,0,0,0.65,1.32
-21/04/2026,Brighton,Chelsea,3,0,3.06,0.34
-22/04/2026,Bournemouth,Leeds,2,2,2.69,1.35
-22/04/2026,Burnley,Manchester City,0,1,0.63,3.38
-24/04/2026,Sunderland,Nottingham Forest,0,5,1.46,2.53
-25/04/2026,Fulham,Aston Villa,1,0,1.97,0.71
-25/04/2026,Liverpool,Crystal Palace,3,1,1.54,2.34
-25/04/2026,West Ham,Everton,2,1,1.39,1.3
-25/04/2026,Wolverhampton Wanderers,Tottenham,0,1,0.96,1.11
-25/04/2026,Arsenal,Newcastle United,1,0,1.57,1.19
-27/04/2026,Manchester United,Brentford,2,1,2.14,1.63
-01/05/2026,Leeds,Burnley,3,1,2.95,1.14
-02/05/2026,Brentford,West Ham,3,0,2.31,1.48
-02/05/2026,Newcastle United,Brighton,3,1,2.27,1.71
-02/05/2026,Wolverhampton Wanderers,Sunderland,1,1,2.54,1.03
-02/05/2026,Arsenal,Fulham,3,0,3.12,0.69
-03/05/2026,Bournemouth,Crystal Palace,3,0,2.28,0.51
-03/05/2026,Manchester United,Liverpool,3,2,2.49,1.91
-03/05/2026,Aston Villa,Tottenham,1,2,0.66,1.85
-04/05/2026,Chelsea,Nottingham Forest,1,3,2.24,1.55
-04/05/2026,Everton,Manchester City,3,3,2.37,2.31
-09/05/2026,Liverpool,Chelsea,1,1,1.2,1.06
-09/05/2026,Brighton,Wolverhampton Wanderers,3,0,2.41,0.43
-09/05/2026,Fulham,Bournemouth,0,1,1.2,1.64
-09/05/2026,Sunderland,Manchester United,0,0,1.58,0.81
-09/05/2026,Manchester City,Brentford,3,0,3.75,0.62
-10/05/2026,Burnley,Aston Villa,2,2,2.2,2.65
-10/05/2026,Crystal Palace,Everton,2,2,2.92,2.28
-10/05/2026,Nottingham Forest,Newcastle United,1,1,2.13,2.07
-10/05/2026,West Ham,Arsenal,0,1,1.07,1.65
-11/05/2026,Tottenham,Leeds,1,1,1.7,1.47
-13/05/2026,Manchester City,Crystal Palace,3,0,2.07,0.74
-15/05/2026,Aston Villa,Liverpool,4,2,3.13,2.17
-17/05/2026,Manchester United,Nottingham Forest,3,2,3.43,1.7
-17/05/2026,Brentford,Crystal Palace,2,2,1.67,2.07
-17/05/2026,Everton,Sunderland,1,3,1.45,1.4
-17/05/2026,Leeds,Brighton,1,0,0.78,2.6
-17/05/2026,Wolverhampton Wanderers,Fulham,1,1,1.28,1.84
-17/05/2026,Newcastle United,West Ham,3,1,2.7,2.45
-18/05/2026,Arsenal,Burnley,1,0,1.36,0.26
-19/05/2026,Bournemouth,Manchester City,1,1,1.11,1.88
-19/05/2026,Chelsea,Tottenham,2,1,1.56,1.22
-24/05/2026,Brighton,Manchester United,0,3,0.94,2.42
-24/05/2026,Burnley,Wolverhampton Wanderers,1,1,2.61,1.77
-24/05/2026,Crystal Palace,Arsenal,1,2,1.16,2.53
-24/05/2026,Fulham,Newcastle United,2,0,2.52,0.82
-24/05/2026,Liverpool,Brentford,1,1,3.07,1.05
-24/05/2026,Manchester City,Aston Villa,1,2,1.6,1.91
-24/05/2026,Nottingham Forest,Bournemouth,1,1,1.92,1.73
-24/05/2026,Sunderland,Chelsea,2,1,1.66,0.9
-24/05/2026,Tottenham,Everton,1,0,2.37,0.99
-24/05/2026,West Ham,Leeds,3,0,3.1,1.23
+03/12/2025,Arsenal,Brentford,2,0,2.63,0.59
+03/12/2025,Brighton,Aston Villa,3,4,1.96,3.16
+03/12/2025,Burnley,Crystal Palace,0,1,1.17,0.99
+03/12/2025,Wolverhampton Wanderers,Nottingham Forest,0,1,1.02,1.12
+03/12/2025,Leeds,Chelsea,3,1,2.2,0.96
+03/12/2025,Liverpool,Sunderland,1,1,1.38,0.71
+04/12/2025,Manchester United,West Ham,1,1,2.28,1.37
+06/12/2025,Aston Villa,Arsenal,2,1,2.72,1.86
+06/12/2025,Bournemouth,Chelsea,0,0,1.42,0.67
+06/12/2025,Everton,Nottingham Forest,3,0,1.25,0.31
+06/12/2025,Manchester City,Sunderland,3,0,2.42,0.63
+06/12/2025,Newcastle United,Burnley,2,1,1.81,1.58
+06/12/2025,Tottenham,Brentford,2,0,2.42,0.47
+06/12/2025,Leeds,Liverpool,3,3,1.79,2.05
+07/12/2025,Brighton,West Ham,1,1,2.1,1.71
+07/12/2025,Fulham,Crystal Palace,1,2,0.77,1.71
+08/12/2025,Wolverhampton Wanderers,Manchester United,1,4,0.26,4.05
+13/12/2025,Chelsea,Everton,2,0,2.64,1.34
+13/12/2025,Liverpool,Brighton,2,0,2.41,1.69
+13/12/2025,Burnley,Fulham,2,3,2.05,1.65
+13/12/2025,Arsenal,Wolverhampton Wanderers,2,1,1.62,0.62
+14/12/2025,Crystal Palace,Manchester City,0,3,1.3,1.35
+14/12/2025,Nottingham Forest,Tottenham,3,0,2.33,0.38
+14/12/2025,Sunderland,Newcastle United,1,0,0.63,0.17
+14/12/2025,West Ham,Aston Villa,2,3,1.28,0.6
+14/12/2025,Brentford,Leeds,1,1,0.7,1.63
+15/12/2025,Manchester United,Bournemouth,4,4,3.21,2.35
+20/12/2025,Newcastle United,Chelsea,2,2,2.88,1.03
+20/12/2025,Bournemouth,Burnley,1,1,1.82,0.48
+20/12/2025,Brighton,Sunderland,0,0,0.92,1.31
+20/12/2025,Manchester City,West Ham,3,0,3.58,1.02
+20/12/2025,Wolverhampton Wanderers,Brentford,0,2,1.27,1.56
+20/12/2025,Tottenham,Liverpool,1,2,1.35,1.23
+20/12/2025,Everton,Arsenal,0,1,0.21,1.85
+20/12/2025,Leeds,Crystal Palace,4,1,2.91,1.53
+21/12/2025,Aston Villa,Manchester United,2,1,1.87,1.3
+22/12/2025,Fulham,Nottingham Forest,1,0,1.71,0.49
+26/12/2025,Manchester United,Newcastle United,1,0,0.94,1.13
+27/12/2025,Nottingham Forest,Manchester City,1,2,0.6,1.46
+27/12/2025,Arsenal,Brighton,2,1,2.54,0.71
+27/12/2025,Brentford,Bournemouth,4,1,2.85,2.56
+27/12/2025,Burnley,Everton,0,0,1.25,1.25
+27/12/2025,Liverpool,Wolverhampton Wanderers,2,1,1.57,0.78
+27/12/2025,West Ham,Fulham,0,1,1.14,1.11
+27/12/2025,Chelsea,Aston Villa,1,2,1.97,2.06
+28/12/2025,Sunderland,Leeds,1,1,0.81,2.61
+28/12/2025,Crystal Palace,Tottenham,0,1,0.93,0.87
+30/12/2025,Burnley,Newcastle United,1,3,1.33,2.49
+30/12/2025,Chelsea,Bournemouth,2,2,2.33,3.49
+30/12/2025,Nottingham Forest,Everton,0,2,1.75,1.7
+30/12/2025,West Ham,Brighton,2,2,2.28,3.09
+30/12/2025,Arsenal,Aston Villa,4,1,4.41,2.94
+30/12/2025,Manchester United,Wolverhampton Wanderers,1,1,1.13,1.22
+01/01/2026,Crystal Palace,Fulham,1,1,2.35,1.75
+01/01/2026,Liverpool,Leeds,0,0,1.68,0.16
+01/01/2026,Brentford,Tottenham,0,0,0.56,0.61
+01/01/2026,Sunderland,Manchester City,0,0,0.96,2.44
+03/01/2026,Aston Villa,Nottingham Forest,3,1,1.43,0.9
+03/01/2026,Brighton,Burnley,2,0,1.47,0.25
+03/01/2026,Wolverhampton Wanderers,West Ham,3,0,2.24,0.24
+03/01/2026,Bournemouth,Arsenal,2,3,0.95,1.28
+04/01/2026,Leeds,Manchester United,1,1,0.97,1.95
+04/01/2026,Everton,Brentford,2,4,1.01,3.05
+04/01/2026,Newcastle United,Crystal Palace,2,0,2.73,1.28
+04/01/2026,Tottenham,Sunderland,1,1,1.42,0.47
+04/01/2026,Fulham,Liverpool,2,2,0.61,1.72
+04/01/2026,Manchester City,Chelsea,1,1,1.03,2.04
+06/01/2026,West Ham,Nottingham Forest,1,2,1.74,1.27
+07/01/2026,Bournemouth,Tottenham,3,2,1.19,1.63
+07/01/2026,Brentford,Sunderland,3,0,3.86,1.51
+07/01/2026,Crystal Palace,Aston Villa,0,0,1.33,2.07
+07/01/2026,Everton,Wolverhampton Wanderers,1,1,1.63,0.71
+07/01/2026,Fulham,Chelsea,2,1,1.06,2.45
+07/01/2026,Manchester City,Brighton,1,1,2.96,1.33
+07/01/2026,Burnley,Manchester United,2,2,0.32,2.52
+07/01/2026,Newcastle United,Leeds,4,3,2.43,2.35
+08/01/2026,Arsenal,Liverpool,0,0,0.7,0.32
+17/01/2026,Manchester United,Manchester City,2,0,3.07,0.39
+17/01/2026,Chelsea,Brentford,2,0,1.62,1.48
+17/01/2026,Leeds,Fulham,1,0,2.17,0.26
+17/01/2026,Liverpool,Burnley,1,1,3.49,0.55
+17/01/2026,Sunderland,Crystal Palace,2,1,1.85,1.15
+17/01/2026,Tottenham,West Ham,1,2,1.65,2.77
+17/01/2026,Nottingham Forest,Arsenal,0,0,0.32,2.86
+18/01/2026,Wolverhampton Wanderers,Newcastle United,0,0,0.39,0.81
+18/01/2026,Aston Villa,Everton,0,1,0.91,0.75
+19/01/2026,Brighton,Bournemouth,1,1,1.0,1.7
+24/01/2026,West Ham,Sunderland,3,1,2.19,0.71
+24/01/2026,Burnley,Tottenham,2,2,1.55,2.59
+24/01/2026,Fulham,Brighton,2,1,1.13,1.95
+24/01/2026,Manchester City,Wolverhampton Wanderers,2,0,1.07,0.54
+24/01/2026,Bournemouth,Liverpool,3,2,3.31,0.94
+25/01/2026,Brentford,Nottingham Forest,0,2,2.0,1.39
+25/01/2026,Crystal Palace,Chelsea,1,3,2.42,3.09
+25/01/2026,Newcastle United,Aston Villa,0,2,1.95,1.32
+25/01/2026,Arsenal,Manchester United,2,3,1.42,0.64
+26/01/2026,Everton,Leeds,1,1,0.89,1.68
+31/01/2026,Brighton,Everton,1,1,1.43,1.28
+31/01/2026,Leeds,Arsenal,0,4,0.18,3.54
+31/01/2026,Wolverhampton Wanderers,Bournemouth,0,2,2.1,1.59
+31/01/2026,Chelsea,West Ham,3,2,2.66,1.73
+31/01/2026,Liverpool,Newcastle United,4,1,3.1,0.28
+01/02/2026,Aston Villa,Brentford,0,1,2.15,0.31
+01/02/2026,Manchester United,Fulham,3,2,1.84,1.72
+01/02/2026,Nottingham Forest,Crystal Palace,1,1,0.99,1.65
+01/02/2026,Tottenham,Manchester City,2,2,1.5,2.04
+02/02/2026,Sunderland,Burnley,3,0,1.89,0.13
+06/02/2026,Leeds,Nottingham Forest,3,1,3.38,1.66
+07/02/2026,Manchester United,Tottenham,2,0,2.17,0.59
+07/02/2026,Arsenal,Sunderland,3,0,1.19,0.43
+07/02/2026,Bournemouth,Aston Villa,1,1,1.83,0.65
+07/02/2026,Burnley,West Ham,0,2,1.85,1.12
+07/02/2026,Fulham,Everton,1,2,2.2,1.89
+07/02/2026,Wolverhampton Wanderers,Chelsea,1,3,1.11,3.76
+07/02/2026,Newcastle United,Brentford,2,3,3.32,1.65
+08/02/2026,Brighton,Crystal Palace,0,1,0.74,0.93
+08/02/2026,Liverpool,Manchester City,1,2,1.27,2.41
+10/02/2026,Chelsea,Leeds,2,2,3.21,1.29
+10/02/2026,Everton,Bournemouth,1,2,2.33,1.41
+10/02/2026,Tottenham,Newcastle United,1,2,1.69,2.47
+10/02/2026,West Ham,Manchester United,1,1,1.31,0.74
+11/02/2026,Aston Villa,Brighton,1,0,0.58,0.48
+11/02/2026,Crystal Palace,Burnley,2,3,2.13,0.69
+11/02/2026,Manchester City,Fulham,3,0,1.68,1.05
+11/02/2026,Nottingham Forest,Wolverhampton Wanderers,0,0,3.69,0.41
+11/02/2026,Sunderland,Liverpool,0,1,0.69,3.08
+12/02/2026,Brentford,Arsenal,1,1,1.81,0.78
+18/02/2026,Wolverhampton Wanderers,Arsenal,2,2,0.17,2.01
+21/02/2026,Aston Villa,Leeds,1,1,1.25,1.28
+21/02/2026,Brentford,Brighton,0,2,1.69,1.37
+21/02/2026,Chelsea,Burnley,1,1,2.52,1.01
+21/02/2026,West Ham,Bournemouth,0,0,2.34,0.52
+21/02/2026,Manchester City,Newcastle United,2,1,2.23,0.51
+22/02/2026,Crystal Palace,Wolverhampton Wanderers,1,0,2.04,1.68
+22/02/2026,Nottingham Forest,Liverpool,0,1,0.93,2.4
+22/02/2026,Sunderland,Fulham,1,3,1.76,2.17
+22/02/2026,Tottenham,Arsenal,1,4,0.38,3.32
+23/02/2026,Everton,Manchester United,0,1,0.56,1.45
+27/02/2026,Wolverhampton Wanderers,Aston Villa,2,0,1.51,1.31
+28/02/2026,Bournemouth,Sunderland,1,1,1.82,1.08
+28/02/2026,Burnley,Brentford,3,4,0.82,2.45
+28/02/2026,Liverpool,West Ham,5,2,2.1,1.35
+28/02/2026,Newcastle United,Everton,2,3,1.12,2.41
+28/02/2026,Leeds,Manchester City,0,1,1.38,2.47
+01/03/2026,Brighton,Nottingham Forest,2,1,1.2,0.83
+01/03/2026,Fulham,Tottenham,2,1,2.32,0.95
+01/03/2026,Manchester United,Crystal Palace,2,1,2.35,0.38
+01/03/2026,Arsenal,Chelsea,2,1,1.72,1.35
+03/03/2026,Bournemouth,Brentford,0,0,2.32,0.67
+03/03/2026,Everton,Burnley,2,0,1.16,0.76
+03/03/2026,Leeds,Sunderland,0,1,0.89,0.84
+03/03/2026,Wolverhampton Wanderers,Liverpool,2,1,0.64,2.17
+04/03/2026,Aston Villa,Chelsea,1,4,1.07,3.39
+04/03/2026,Brighton,Arsenal,0,1,0.92,0.51
+04/03/2026,Fulham,West Ham,0,1,0.63,1.5
+04/03/2026,Manchester City,Nottingham Forest,2,2,2.73,1.24
+04/03/2026,Newcastle United,Manchester United,2,1,1.97,1.81
+05/03/2026,Tottenham,Crystal Palace,1,3,1.3,1.92
+14/03/2026,Burnley,Bournemouth,0,0,1.68,2.37
+14/03/2026,Sunderland,Brighton,0,1,0.66,1.13
+14/03/2026,Arsenal,Everton,2,0,1.91,1.18
+14/03/2026,Chelsea,Newcastle United,0,1,1.73,1.03
+14/03/2026,West Ham,Manchester City,1,1,0.49,1.95
+15/03/2026,Crystal Palace,Leeds,0,0,0.53,1.14
+15/03/2026,Manchester United,Aston Villa,3,1,1.68,1.21
+15/03/2026,Nottingham Forest,Fulham,0,0,0.82,0.93
+15/03/2026,Liverpool,Tottenham,1,1,1.3,1.16
+16/03/2026,Brentford,Wolverhampton Wanderers,2,2,2.8,1.8
+20/03/2026,Bournemouth,Manchester United,2,2,1.77,1.75
+21/03/2026,Brighton,Liverpool,2,1,3.43,0.96
+21/03/2026,Fulham,Burnley,3,1,3.48,1.93
+21/03/2026,Everton,Chelsea,3,0,1.45,1.35
+21/03/2026,Leeds,Brentford,0,0,0.42,0.3
+22/03/2026,Newcastle United,Sunderland,1,2,1.27,2.67
+22/03/2026,Aston Villa,West Ham,2,0,2.49,0.76
+22/03/2026,Tottenham,Nottingham Forest,0,3,1.62,1.54
+10/04/2026,West Ham,Wolverhampton Wanderers,4,0,2.54,0.57
+11/04/2026,Arsenal,Bournemouth,1,2,3.16,1.39
+11/04/2026,Brentford,Everton,2,2,2.26,1.57
+11/04/2026,Burnley,Brighton,0,2,0.81,1.07
+11/04/2026,Liverpool,Fulham,2,0,2.01,1.42
+12/04/2026,Crystal Palace,Newcastle United,2,1,3.14,1.27
+12/04/2026,Nottingham Forest,Aston Villa,1,1,0.85,1.36
+12/04/2026,Sunderland,Tottenham,1,0,1.78,1.02
+12/04/2026,Chelsea,Manchester City,0,3,1.22,2.41
+13/04/2026,Manchester United,Leeds,1,2,1.37,2.95
+18/04/2026,Brentford,Fulham,0,0,2.34,0.79
+18/04/2026,Leeds,Wolverhampton Wanderers,3,0,3.56,0.57
+18/04/2026,Newcastle United,Bournemouth,1,2,1.61,3.37
+18/04/2026,Tottenham,Brighton,2,2,1.56,1.14
+18/04/2026,Chelsea,Manchester United,0,1,1.28,0.44
+19/04/2026,Aston Villa,Sunderland,4,3,3.9,1.56
+19/04/2026,Everton,Liverpool,1,2,1.48,1.38
+19/04/2026,Nottingham Forest,Burnley,4,1,1.44,0.6
+19/04/2026,Manchester City,Arsenal,2,1,2.62,2.29
+20/04/2026,Crystal Palace,West Ham,0,0,0.73,0.62
+21/04/2026,Brighton,Chelsea,3,0,2.52,0.3
+22/04/2026,Bournemouth,Leeds,2,2,1.91,1.22
+22/04/2026,Burnley,Manchester City,0,1,0.97,3.41
+24/04/2026,Sunderland,Nottingham Forest,0,5,0.61,1.54
+25/04/2026,Fulham,Aston Villa,1,0,1.24,0.91
+25/04/2026,Liverpool,Crystal Palace,3,1,1.45,2.2
+25/04/2026,West Ham,Everton,2,1,1.84,1.11
+25/04/2026,Wolverhampton Wanderers,Tottenham,0,1,0.76,1.06
+25/04/2026,Arsenal,Newcastle United,1,0,0.64,0.87
+27/04/2026,Manchester United,Brentford,2,1,1.85,1.3
+01/05/2026,Leeds,Burnley,3,1,2.1,0.43
+02/05/2026,Brentford,West Ham,3,0,2.27,0.75
+02/05/2026,Newcastle United,Brighton,3,1,3.13,1.87
+02/05/2026,Wolverhampton Wanderers,Sunderland,1,1,1.96,0.92
+02/05/2026,Arsenal,Fulham,3,0,4.09,0.7
+03/05/2026,Bournemouth,Crystal Palace,3,0,2.3,0.68
+03/05/2026,Manchester United,Liverpool,3,2,2.56,1.03
+03/05/2026,Aston Villa,Tottenham,1,2,0.61,1.12
+04/05/2026,Chelsea,Nottingham Forest,1,3,2.17,2.31
+04/05/2026,Everton,Manchester City,3,3,1.69,1.42
+09/05/2026,Liverpool,Chelsea,1,1,0.62,0.6
+09/05/2026,Brighton,Wolverhampton Wanderers,3,0,2.22,0.52
+09/05/2026,Fulham,Bournemouth,0,1,1.24,1.0
+09/05/2026,Sunderland,Manchester United,0,0,1.24,0.54
+09/05/2026,Manchester City,Brentford,3,0,4.37,0.67
+10/05/2026,Burnley,Aston Villa,2,2,1.71,1.75
+10/05/2026,Crystal Palace,Everton,2,2,3.29,2.1
+10/05/2026,Nottingham Forest,Newcastle United,1,1,1.46,1.65
+10/05/2026,West Ham,Arsenal,0,1,1.32,1.43
+11/05/2026,Tottenham,Leeds,1,1,1.49,1.87
+13/05/2026,Manchester City,Crystal Palace,3,0,1.96,0.43
+15/05/2026,Aston Villa,Liverpool,4,2,2.53,1.55
+17/05/2026,Manchester United,Nottingham Forest,3,2,4.29,1.84
+17/05/2026,Brentford,Crystal Palace,2,2,1.55,1.82
+17/05/2026,Everton,Sunderland,1,3,1.32,1.28
+17/05/2026,Leeds,Brighton,1,0,0.75,2.23
+17/05/2026,Wolverhampton Wanderers,Fulham,1,1,1.5,1.48
+17/05/2026,Newcastle United,West Ham,3,1,2.13,0.96
+18/05/2026,Arsenal,Burnley,1,0,1.23,0.19
+19/05/2026,Bournemouth,Manchester City,1,1,1.71,1.27
+19/05/2026,Chelsea,Tottenham,2,1,1.09,2.15
+24/05/2026,Brighton,Manchester United,0,3,0.7,2.33
+24/05/2026,Burnley,Wolverhampton Wanderers,1,1,1.28,2.84
+24/05/2026,Crystal Palace,Arsenal,1,2,1.0,3.91
+24/05/2026,Fulham,Newcastle United,2,0,1.73,0.24
+24/05/2026,Liverpool,Brentford,1,1,2.99,1.46
+24/05/2026,Manchester City,Aston Villa,1,2,1.38,2.44
+24/05/2026,Nottingham Forest,Bournemouth,1,1,2.06,1.34
+24/05/2026,Sunderland,Chelsea,2,1,2.33,0.92
+24/05/2026,Tottenham,Everton,1,0,1.41,0.27
+24/05/2026,West Ham,Leeds,3,0,2.73,1.95
