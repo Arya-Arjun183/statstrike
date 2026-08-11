@@ -24,7 +24,8 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     setSubmitStatus('idle');
 
     try {
-      const response = await fetch('http://localhost:8000/api/feedback', {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || '';
+      const response = await fetch(`${API_URL}/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
