@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Moon, Sun, Layers, Sparkles } from 'lucide-react';
+import { Calendar, Moon, Sun, Layers, Sparkles, MessageSquarePlus } from 'lucide-react';
 import { StatStrikeLogo } from './StatStrikeLogo';
 import type { MatchdaySummary } from '../types/matchday';
 
@@ -17,6 +17,7 @@ interface MatchdayHeaderProps {
   onSelectView: (view: 'matchday' | 'custom') => void;
   isLightMode: boolean;
   onToggleTheme: () => void;
+  onOpenFeedback: () => void;
 }
 
 export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
@@ -33,6 +34,7 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
   onSelectView,
   isLightMode,
   onToggleTheme,
+  onOpenFeedback,
 }) => {
   return (
     <header className="matchday-header-container">
@@ -62,6 +64,13 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
             >
               <Layers size={16} />
               <span>Custom Simulator</span>
+            </button>
+            <button
+              className="view-tab-btn"
+              onClick={onOpenFeedback}
+            >
+              <MessageSquarePlus size={16} />
+              <span>Feedback</span>
             </button>
           </div>
 
