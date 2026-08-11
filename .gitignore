@@ -28,3 +28,6 @@ data/raw/premier/api-football-cache.csv
 
 .env
 
+# Local To-Do lists
+TODO.md
+training_output.log
