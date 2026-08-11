@@ -4,6 +4,8 @@ import math
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+import json
+import os
 
 import numpy as np
 import pandas as pd
@@ -562,8 +564,18 @@ def compute_model_explainability(
     }
 
 
-def get_matchday_overview(matchweek: int = 1) -> dict[str, Any]:
+def get_matchday_overview(matchweek: int = 1, force_recompute: bool = False) -> dict[str, Any]:
     """Assemble complete matchday data with predictions, quick facts, and explainability."""
+    cache_dir = Path("data/cache")
+    cache_file = cache_dir / f"matchweek_{matchweek}.json"
+    
+    if not force_recompute and cache_file.exists():
+        try:
+            with open(cache_file, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading cache for matchweek {matchweek}: {e}")
+
     round_name, season_name, fixtures, available_matchweeks, current_mw = get_current_matchday_fixtures(matchweek)
     config = load_config(CONFIG_PATH)
     df_history = load_matches(
@@ -630,7 +642,7 @@ def get_matchday_overview(matchweek: int = 1) -> dict[str, Any]:
             "explanation": explanation,
         })
         
-    return {
+    result = {
         "round": round_name,
         "season": season_name,
         "current_matchweek": current_mw,
@@ -643,3 +655,21 @@ def get_matchday_overview(matchweek: int = 1) -> dict[str, Any]:
         },
         "matches": matches_payload,
     }
+    
+    # Save to cache
+    try:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        with open(cache_file, "w") as f:
+            json.dump(result, f)
+    except Exception as e:
+        print(f"Error saving cache for matchweek {matchweek}: {e}")
+        
+    return result
+
+def precompute_season_cache(start_mw: int = 1, end_mw: int = 38) -> None:
+    """Precompute and save cache for a range of matchweeks."""
+    print(f"Precomputing matchday cache for matchweeks {start_mw} to {end_mw}...")
+    for mw in range(start_mw, end_mw + 1):
+        print(f"Computing MW {mw}...")
+        get_matchday_overview(mw, force_recompute=True)
+    print("Cache generation complete!")

@@ -62,6 +62,9 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Path to CSV with upcoming fixtures (Date, HomeTeam, AwayTeam, ...)",
     )
 
+    # --- precompute-cache ---
+    cache_p = sub.add_parser("precompute-cache", help="Precompute prediction caches for the whole season")
+
     return parser
 
 
@@ -123,6 +126,11 @@ def main() -> None:
         added = fetch_understat_season(args.season)
         if added > 0 and args.retrain:
             update_and_retrain()
+        return
+
+    if args.command == "precompute-cache":
+        from premier_league_predictor.matchday import precompute_season_cache
+        precompute_season_cache()
         return
 
     config = load_config(args.config)

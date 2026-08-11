@@ -188,4 +188,9 @@ def update_and_retrain(config_path: str = "configs/test_xg_efficient.yaml"):
     cfg = load_config(config_path)
     metrics = train_from_config(cfg)
     print(f"Model retrained successfully! Holdout accuracy={metrics.get('accuracy', 0.0):.4f}")
+    
+    # Automatically rebuild cache after training
+    from premier_league_predictor.matchday import precompute_season_cache
+    precompute_season_cache()
+    
     return metrics
