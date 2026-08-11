@@ -24,17 +24,31 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     setSubmitStatus('idle');
 
     try {
-      const API_URL = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await fetch(`${API_URL}/api/feedback`, {
+      const accessKey = import.meta.env.VITE_WEB3FORMS_KEY;
+      
+      if (!accessKey) {
+        throw new Error('VITE_WEB3FORMS_KEY is missing from environment variables.');
+      }
+
+      const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ type, name, email, message }),
+        body: JSON.stringify({
+          access_key: accessKey,
+          subject: `StatStrike: New ${type}`,
+          from_name: name || 'Anonymous User',
+          email: email || 'No email provided',
+          message: message,
+          feedback_type: type
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to submit feedback');
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to submit feedback');
       }
 
       setSubmitStatus('success');
