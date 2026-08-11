@@ -2,8 +2,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import smtplib
-from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
 
@@ -48,12 +46,6 @@ class MatchInsightsRequest(BaseModel):
     away_team: str
     date: str = "15/08/2026"
 
-class FeedbackRequest(BaseModel):
-    type: str
-    name: str = ""
-    email: str = ""
-    message: str
-
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
@@ -66,46 +58,6 @@ def matchday(matchweek: int = Query(default=1, ge=1, le=38)):
         return get_matchday_overview(matchweek=matchweek)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/feedback")
-@app.post("/feedback")
-def submit_feedback(request: FeedbackRequest):
-    """Submit feedback and send it via email."""
-    smtp_email = os.getenv("SMTP_EMAIL")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-    dest_email = os.getenv("DESTINATION_EMAIL", smtp_email)
-
-    if not smtp_email or not smtp_password:
-        # Fallback if env vars aren't set: just print to terminal
-        print("\n--- NEW FEEDBACK SUBMITTED ---")
-        print(f"Type: {request.type}")
-        print(f"Name: {request.name}")
-        print(f"Email: {request.email}")
-        print(f"Message: {request.message}")
-        print("------------------------------\n")
-        print("Warning: SMTP_EMAIL and SMTP_PASSWORD are not set in .env. Feedback was not emailed.")
-        return {"status": "success", "message": "Feedback saved to logs (Email not configured)."}
-
-    msg_body = f"You received a new {request.type} from StatStrike.\n\n"
-    if request.name:
-        msg_body += f"Name: {request.name}\n"
-    if request.email:
-        msg_body += f"Return Email: {request.email}\n"
-    msg_body += f"\nMessage:\n{request.message}\n"
-
-    msg = MIMEText(msg_body)
-    msg['Subject'] = f"StatStrike: New {request.type}"
-    msg['From'] = smtp_email
-    msg['To'] = dest_email
-
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(smtp_email, smtp_password)
-            server.send_message(msg)
-        return {"status": "success", "message": "Feedback sent successfully!"}
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        raise HTTPException(status_code=500, detail="Failed to send feedback email.")
 
 @app.post("/api/match/insights")
 @app.post("/match/insights")
