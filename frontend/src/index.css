@@ -1529,8 +1529,15 @@ select:focus, input[type="date"]:focus {
 
 /* Mobile Responsive Modal Adjustments */
 @media (max-width: 768px) {
+  .modal-backdrop {
+    padding: 0;
+  }
+
   .modal-container {
-    max-height: 95vh;
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 0;
+    overflow-y: auto;
   }
   
   .modal-matchup-hero {
@@ -1617,5 +1624,6 @@ select:focus, input[type="date"]:focus {
   
   .modal-body-scroll {
     padding: 1rem;
+    overflow-y: visible;
   }
 }
