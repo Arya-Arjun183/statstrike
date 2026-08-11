@@ -819,7 +819,8 @@ body.light-mode .summary-stat-pill {
 .modal-body-scroll {
   padding: 1.5rem 2rem;
   overflow-y: auto;
-  max-height: calc(90vh - 220px);
+  flex: 1;
+  min-height: 0;
 }
 
 .tab-content {
@@ -1526,3 +1527,95 @@ select:focus, input[type="date"]:focus {
   border-color: rgba(147, 51, 234, 0.25);
 }
 
+/* Mobile Responsive Modal Adjustments */
+@media (max-width: 768px) {
+  .modal-container {
+    max-height: 95vh;
+  }
+  
+  .modal-matchup-hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    padding-right: 0;
+    gap: 1.25rem;
+    text-align: center;
+  }
+
+  .hero-team {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-team.away {
+    flex-direction: column;
+  }
+
+  .hero-team-info {
+    align-items: center;
+  }
+
+  .hero-team-name {
+    word-break: normal;
+  }
+
+  .modal-header {
+    flex-direction: column;
+    padding: 1.25rem;
+  }
+
+  .modal-close-btn {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+  
+  .hero-center-status {
+    padding: 0.5rem 0;
+    order: 2;
+  }
+  
+  .hero-team.home {
+    order: 1;
+  }
+
+  .hero-team.away {
+    order: 3;
+  }
+
+  .modal-tabs-nav {
+    flex-direction: column;
+    padding: 1rem 1rem 0;
+    gap: 0.5rem;
+  }
+  
+  .modal-tab-btn {
+    justify-content: center;
+  }
+  
+  .modal-prob-labels {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .tactical-bars-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .h2h-summary-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .xg-compare-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .venue-splits-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .modal-body-scroll {
+    padding: 1rem;
+  }
+}
