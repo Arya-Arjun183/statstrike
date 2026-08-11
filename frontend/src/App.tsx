@@ -5,6 +5,7 @@ import { MatchdayHeader } from './components/MatchdayHeader';
 import { MatchCard } from './components/MatchCard';
 import { MatchDetailModal } from './components/MatchDetailModal';
 import { CustomSimulator } from './components/CustomSimulator';
+import FeedbackModal from './components/FeedbackModal';
 import type { MatchFixture, MatchdayOverview } from './types/matchday';
 import {
   trackMatchInspect,
@@ -23,6 +24,7 @@ export function App() {
   const [activeFilter, setActiveFilter] = useState<'all' | 'high_conf' | 'toss_up'>('all');
   const [activeView, setActiveView] = useState<'matchday' | 'custom'>('matchday');
   const [isLightMode, setIsLightMode] = useState<boolean>(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -110,6 +112,7 @@ export function App() {
         onSelectView={(v) => setActiveView(v)}
         isLightMode={isLightMode}
         onToggleTheme={toggleTheme}
+        onOpenFeedback={() => setIsFeedbackOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -168,6 +171,12 @@ export function App() {
       <MatchDetailModal
         match={selectedMatch}
         onClose={() => setSelectedMatch(null)}
+      />
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
       />
     </div>
   );
