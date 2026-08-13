@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, TrendingUp, Shield, Zap, MapPin, Swords, BarChart3, Clock } from 'lucide-react';
+import { X, Sparkles, TrendingUp, Shield, Zap, MapPin, Swords, BarChart3, Clock, HelpCircle, Percent } from 'lucide-react';
 import type { MatchFixture } from '../types/matchday';
 import { getTeamLogo } from '../utils/teamAssets';
 import { formatMatchDateTime } from '../utils/dateUtils';
@@ -142,7 +142,11 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
                 <div className="sub-panel">
                   <div className="sub-panel-title">
                     <Zap size={16} />
-                    <span>Projected Expected Goals (xG)</span>
+                    <span className="tooltip-container">
+                      Projected Expected Goals (xG)
+                      <HelpCircle size={14} className="tooltip-icon" />
+                      <span className="tooltip-text">xG: The number of goals a team is expected to score based on the quality of their chances.</span>
+                    </span>
                   </div>
                   <div className="xg-compare-container">
                     <div className="xg-team-box home">
@@ -248,11 +252,41 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
             </div>
           ) : (
             <div className="tab-content facts-tab">
+              {/* Betting Odds */}
+              {match.odds && (
+                <div className="sub-panel">
+                  <div className="sub-panel-title">
+                    <Percent size={16} />
+                    <span>Betting Value Edge (+EV)</span>
+                  </div>
+                  <div className="elo-metric-card" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', textAlign: 'center' }}>
+                    <div className="split-box" style={{ background: 'transparent' }}>
+                      <span className="split-title">{match.home_team} Win</span>
+                      <span className="split-stat">Model: {Math.round(match.prob_home * 100)}%</span>
+                      <span className="split-sub" style={{ marginTop: '4px' }}>Bookie: {Math.round(match.odds.home_implied * 100)}% ({match.odds.home_odds})</span>
+                      {match.prob_home > match.odds.home_implied + 0.03 && <span style={{color: '#10b981', fontWeight: 'bold', fontSize: '0.8rem', marginTop: '4px', display: 'inline-block'}}>+EV Edge</span>}
+                    </div>
+                    <div className="split-box" style={{ background: 'transparent' }}>
+                      <span className="split-title">Draw</span>
+                      <span className="split-stat">Model: {Math.round(match.prob_draw * 100)}%</span>
+                      <span className="split-sub" style={{ marginTop: '4px' }}>Bookie: {Math.round(match.odds.draw_implied * 100)}% ({match.odds.draw_odds})</span>
+                      {match.prob_draw > match.odds.draw_implied + 0.03 && <span style={{color: '#10b981', fontWeight: 'bold', fontSize: '0.8rem', marginTop: '4px', display: 'inline-block'}}>+EV Edge</span>}
+                    </div>
+                    <div className="split-box" style={{ background: 'transparent' }}>
+                      <span className="split-title">{match.away_team} Win</span>
+                      <span className="split-stat">Model: {Math.round(match.prob_away * 100)}%</span>
+                      <span className="split-sub" style={{ marginTop: '4px' }}>Bookie: {Math.round(match.odds.away_implied * 100)}% ({match.odds.away_odds})</span>
+                      {match.prob_away > match.odds.away_implied + 0.03 && <span style={{color: '#10b981', fontWeight: 'bold', fontSize: '0.8rem', marginTop: '4px', display: 'inline-block'}}>+EV Edge</span>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Form Comparison */}
               <div className="sub-panel">
                 <div className="sub-panel-title">
                   <TrendingUp size={16} />
-                  <span>Recent Form (Last 5 Premier League Matches)</span>
+                  <span>Overall Form (Last 5 Premier League Matches)</span>
                 </div>
                 <div className="form-comparison-grid">
                   {/* Home Team Form */}
@@ -328,7 +362,7 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
                   </div>
 
                   <div className="recent-h2h-list">
-                    {match.quick_facts.h2h.recent_matches.map((h, i) => (
+                    {[...match.quick_facts.h2h.recent_matches].reverse().map((h, i) => (
                       <div key={i} className="h2h-match-row">
                         <span className="h2h-date">{h.date}</span>
                         <span className="h2h-score">{h.home_team} {h.score} {h.away_team}</span>
@@ -342,7 +376,11 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
                 <div className="sub-panel">
                   <div className="sub-panel-title">
                     <Shield size={16} />
-                    <span>Elo Ratings & Venue Splits</span>
+                    <span className="tooltip-container">
+                      Elo Ratings & Venue Splits
+                      <HelpCircle size={14} className="tooltip-icon" />
+                      <span className="tooltip-text">Elo Rating: A measure of team strength based on past results. Higher is better.</span>
+                    </span>
                   </div>
                   <div className="elo-metric-card">
                     <div className="elo-row">

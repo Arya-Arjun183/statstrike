@@ -15,6 +15,7 @@ from premier_league_predictor.matchday import (
     compute_quick_facts,
     compute_model_explainability,
 )
+from premier_league_predictor.external_data import get_match_odds
 from premier_league_predictor.data import load_matches, normalize_team_name
 
 @asynccontextmanager
@@ -80,6 +81,7 @@ def match_insights(request: MatchInsightsRequest):
             csv_glob=config["data"].get("csv_glob")
         )
         quick_facts = compute_quick_facts(request.home_team, request.away_team, df_history)
+        odds = get_match_odds(request.home_team, request.away_team)
         explanation = compute_model_explainability(request.home_team, request.away_team, p_res, quick_facts)
         
         return {
@@ -92,6 +94,7 @@ def match_insights(request: MatchInsightsRequest):
             "prob_away": p_res.get("prob_away"),
             "quick_facts": quick_facts,
             "explanation": explanation,
+            "odds": odds,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
