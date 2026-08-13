@@ -41,7 +41,7 @@ export const CustomSimulator: React.FC<CustomSimulatorProps> = ({ onInspectMatch
       const prob_a = data.prob_away || 0.27;
       const max_p = Math.max(prob_h, prob_a);
 
-      let conf_label = 'Toss Up';
+      let conf_label = 'Value Draw / Toss Up';
       let conf_class: 'confidence-high' | 'confidence-med' | 'confidence-low' = 'confidence-low';
       if (max_p >= 0.58) {
         conf_label = 'High Confidence';
@@ -141,6 +141,9 @@ export const CustomSimulator: React.FC<CustomSimulatorProps> = ({ onInspectMatch
                 }}
                 required
               />
+              <span className="input-helper-text" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                Date determines team form, fatigue, and recent stats.
+              </span>
             </div>
 
             <button type="submit" className="btn-primary" disabled={loading}>

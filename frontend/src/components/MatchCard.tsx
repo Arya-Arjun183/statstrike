@@ -57,7 +57,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
             loading="lazy"
           />
           <span className="team-card-name" title={match.home_team}>{match.home_team}</span>
-          <div className="form-mini-row">
+          <div className="form-mini-row" title="Overall Form (Last 5 Matches)">
             {match.quick_facts.home_form.map((f, i) => (
               <span key={i} className={`form-mini-dot form-${f.result.toLowerCase()}`} title={`${f.result} vs ${f.opponent} (${f.score})`}>
                 {f.result}
@@ -86,7 +86,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
             loading="lazy"
           />
           <span className="team-card-name" title={match.away_team}>{match.away_team}</span>
-          <div className="form-mini-row">
+          <div className="form-mini-row" title="Overall Form (Last 5 Matches)">
             {match.quick_facts.away_form.map((f, i) => (
               <span key={i} className={`form-mini-dot form-${f.result.toLowerCase()}`} title={`${f.result} vs ${f.opponent} (${f.score})`}>
                 {f.result}

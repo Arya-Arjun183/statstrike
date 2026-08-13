@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, TrendingUp, Shield, Zap, MapPin, Swords, BarChart3, Clock } from 'lucide-react';
+import { X, Sparkles, TrendingUp, Shield, Zap, MapPin, Swords, BarChart3, Clock, HelpCircle } from 'lucide-react';
 import type { MatchFixture } from '../types/matchday';
 import { getTeamLogo } from '../utils/teamAssets';
 import { formatMatchDateTime } from '../utils/dateUtils';
@@ -142,7 +142,11 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
                 <div className="sub-panel">
                   <div className="sub-panel-title">
                     <Zap size={16} />
-                    <span>Projected Expected Goals (xG)</span>
+                    <span className="tooltip-container">
+                      Projected Expected Goals (xG)
+                      <HelpCircle size={14} className="tooltip-icon" />
+                      <span className="tooltip-text">xG: The number of goals a team is expected to score based on the quality of their chances.</span>
+                    </span>
                   </div>
                   <div className="xg-compare-container">
                     <div className="xg-team-box home">
@@ -252,7 +256,7 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
               <div className="sub-panel">
                 <div className="sub-panel-title">
                   <TrendingUp size={16} />
-                  <span>Recent Form (Last 5 Premier League Matches)</span>
+                  <span>Overall Form (Last 5 Premier League Matches)</span>
                 </div>
                 <div className="form-comparison-grid">
                   {/* Home Team Form */}
@@ -328,7 +332,7 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
                   </div>
 
                   <div className="recent-h2h-list">
-                    {match.quick_facts.h2h.recent_matches.map((h, i) => (
+                    {[...match.quick_facts.h2h.recent_matches].reverse().map((h, i) => (
                       <div key={i} className="h2h-match-row">
                         <span className="h2h-date">{h.date}</span>
                         <span className="h2h-score">{h.home_team} {h.score} {h.away_team}</span>
@@ -342,7 +346,11 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
                 <div className="sub-panel">
                   <div className="sub-panel-title">
                     <Shield size={16} />
-                    <span>Elo Ratings & Venue Splits</span>
+                    <span className="tooltip-container">
+                      Elo Ratings & Venue Splits
+                      <HelpCircle size={14} className="tooltip-icon" />
+                      <span className="tooltip-text">Elo Rating: A measure of team strength based on past results. Higher is better.</span>
+                    </span>
                   </div>
                   <div className="elo-metric-card">
                     <div className="elo-row">
