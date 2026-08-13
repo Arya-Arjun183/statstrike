@@ -27,6 +27,8 @@ jobs:
         pip install .
         
     - name: Fetch Latest Data, Retrain Model, and Precompute Cache
+      env:
+        ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
       run: |
         # This single command fetches the data, and if there are new matches, 
         # it retrains the model and precomputes the global cache.

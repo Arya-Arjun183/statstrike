@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, TrendingUp, Shield, Zap, MapPin, Swords, BarChart3, Clock, HelpCircle } from 'lucide-react';
+import { X, Sparkles, TrendingUp, Shield, Zap, MapPin, Swords, BarChart3, Clock, HelpCircle, Percent } from 'lucide-react';
 import type { MatchFixture } from '../types/matchday';
 import { getTeamLogo } from '../utils/teamAssets';
 import { formatMatchDateTime } from '../utils/dateUtils';
@@ -252,6 +252,36 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
             </div>
           ) : (
             <div className="tab-content facts-tab">
+              {/* Betting Odds */}
+              {match.odds && (
+                <div className="sub-panel">
+                  <div className="sub-panel-title">
+                    <Percent size={16} />
+                    <span>Betting Value Edge (+EV)</span>
+                  </div>
+                  <div className="elo-metric-card" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', textAlign: 'center' }}>
+                    <div className="split-box" style={{ background: 'transparent' }}>
+                      <span className="split-title">{match.home_team} Win</span>
+                      <span className="split-stat">Model: {Math.round(match.prob_home * 100)}%</span>
+                      <span className="split-sub" style={{ marginTop: '4px' }}>Bookie: {Math.round(match.odds.home_implied * 100)}% ({match.odds.home_odds})</span>
+                      {match.prob_home > match.odds.home_implied + 0.03 && <span style={{color: '#10b981', fontWeight: 'bold', fontSize: '0.8rem', marginTop: '4px', display: 'inline-block'}}>+EV Edge</span>}
+                    </div>
+                    <div className="split-box" style={{ background: 'transparent' }}>
+                      <span className="split-title">Draw</span>
+                      <span className="split-stat">Model: {Math.round(match.prob_draw * 100)}%</span>
+                      <span className="split-sub" style={{ marginTop: '4px' }}>Bookie: {Math.round(match.odds.draw_implied * 100)}% ({match.odds.draw_odds})</span>
+                      {match.prob_draw > match.odds.draw_implied + 0.03 && <span style={{color: '#10b981', fontWeight: 'bold', fontSize: '0.8rem', marginTop: '4px', display: 'inline-block'}}>+EV Edge</span>}
+                    </div>
+                    <div className="split-box" style={{ background: 'transparent' }}>
+                      <span className="split-title">{match.away_team} Win</span>
+                      <span className="split-stat">Model: {Math.round(match.prob_away * 100)}%</span>
+                      <span className="split-sub" style={{ marginTop: '4px' }}>Bookie: {Math.round(match.odds.away_implied * 100)}% ({match.odds.away_odds})</span>
+                      {match.prob_away > match.odds.away_implied + 0.03 && <span style={{color: '#10b981', fontWeight: 'bold', fontSize: '0.8rem', marginTop: '4px', display: 'inline-block'}}>+EV Edge</span>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Form Comparison */}
               <div className="sub-panel">
                 <div className="sub-panel-title">

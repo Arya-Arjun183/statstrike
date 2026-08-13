@@ -16,6 +16,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
 
   const localTimeInfo = formatMatchDateTime(match.date, match.time);
 
+  const getValueBetText = () => {
+    if (!match.odds) return null;
+    if (match.prediction === 'H' && match.prob_home > match.odds.home_implied + 0.03) return '+EV Home';
+    if (match.prediction === 'A' && match.prob_away > match.odds.away_implied + 0.03) return '+EV Away';
+    if (match.prediction === 'D' && match.prob_draw > match.odds.draw_implied + 0.03) return '+EV Draw';
+    return null;
+  };
+
+  const valueBet = getValueBetText();
+
   const getPredictionTitle = () => {
     if (match.prediction === 'H') return `${match.home_team} Win`;
     if (match.prediction === 'A') return `${match.away_team} Win`;
@@ -72,6 +82,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
           <div className={`pred-outcome-pill ${getPredictionClass()}`}>
             {getPredictionTitle()}
           </div>
+          {valueBet && (
+            <div className="ev-badge" style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <Sparkles size={10} /> {valueBet}
+            </div>
+          )}
           <div className="score-hint">
             Top Score: <strong>{match.most_likely_score}</strong>
           </div>

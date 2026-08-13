@@ -83,6 +83,16 @@ export interface ModelExplanation {
   narrative: string;
 }
 
+export interface MatchOdds {
+  home_odds: number;
+  draw_odds: number;
+  away_odds: number;
+  home_implied: number;
+  draw_implied: number;
+  away_implied: number;
+}
+
+
 export interface MatchFixture {
   fixture_id: number;
   home_team: string;
@@ -100,6 +110,7 @@ export interface MatchFixture {
   most_likely_score: string;
   quick_facts: QuickFacts;
   explanation: ModelExplanation;
+  odds?: MatchOdds | null;
 }
 
 export interface MatchdaySummary {

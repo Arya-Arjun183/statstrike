@@ -15,6 +15,7 @@ from premier_league_predictor.config import load_config
 from premier_league_predictor.data import load_matches, normalize_team_name
 from premier_league_predictor.prediction import predict_fixtures
 from premier_league_predictor.api_football import fetch_api, LEAGUE_ID, get_mapped_team_name, API_FOOTBALL_KEY
+from premier_league_predictor.external_data import get_match_odds
 
 CONFIG_PATH = "configs/test_xg_efficient.yaml"
 FIXTURES_FILE_PATH = Path("data/raw/premier/fixtures-26-27.csv")
@@ -620,6 +621,7 @@ def get_matchday_overview(matchweek: int = 1, force_recompute: bool = False) -> 
             conf_class = "confidence-low"
 
         # Compute Quick Facts & Explainability
+        odds = get_match_odds(fix["HomeTeam"], fix["AwayTeam"])
         quick_facts = compute_quick_facts(fix["HomeTeam"], fix["AwayTeam"], df_history)
         explanation = compute_model_explainability(fix["HomeTeam"], fix["AwayTeam"], p_res, quick_facts)
         
@@ -640,6 +642,7 @@ def get_matchday_overview(matchweek: int = 1, force_recompute: bool = False) -> 
             "most_likely_score": explanation["most_likely_score"],
             "quick_facts": quick_facts,
             "explanation": explanation,
+            "odds": odds,
         })
         
     result = {
