@@ -7,7 +7,7 @@ name = "StatStrike"
 version = "0.1.0"
 description = "Train baseline ML models to predict Premier League match outcomes"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
   "pandas>=2.2.0",
   "scikit-learn>=1.9.0",
