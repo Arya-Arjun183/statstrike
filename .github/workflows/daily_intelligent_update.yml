@@ -30,9 +30,11 @@ jobs:
       env:
         ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
       run: |
-        # This single command fetches the data, and if there are new matches, 
-        # it retrains the model and precomputes the global cache.
+        # Fetch new matches. It will automatically retrain and recompute if there are new matches.
         python src/premier_league_predictor/cli.py fetch-understat --season 2026
+        
+        # Force recompute the cache every time, because live betting odds update daily!
+        python src/premier_league_predictor/cli.py precompute-cache
         
     - name: Check for changes
       id: git-check
