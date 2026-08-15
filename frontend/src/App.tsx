@@ -5,6 +5,7 @@ import { MatchdayHeader } from './components/MatchdayHeader';
 import { MatchCard } from './components/MatchCard';
 import { MatchDetailModal } from './components/MatchDetailModal';
 import FeedbackModal from './components/FeedbackModal';
+import DataCreditModal from './components/DataCreditModal';
 import type { MatchFixture, MatchdayOverview } from './types/matchday';
 import {
   trackMatchInspect,
@@ -23,6 +24,7 @@ export function App() {
   const [activeFilter, setActiveFilter] = useState<'all' | 'high_conf' | 'toss_up'>('all');
   const [isLightMode, setIsLightMode] = useState<boolean>(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -109,6 +111,7 @@ export function App() {
         isLightMode={isLightMode}
         onToggleTheme={toggleTheme}
         onOpenFeedback={() => setIsFeedbackOpen(true)}
+        onOpenCredits={() => setIsCreditsOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -167,6 +170,12 @@ export function App() {
       <FeedbackModal
         isOpen={isFeedbackOpen}
         onClose={() => setIsFeedbackOpen(false)}
+      />
+
+      {/* Credits Modal */}
+      <DataCreditModal
+        isOpen={isCreditsOpen}
+        onClose={() => setIsCreditsOpen(false)}
       />
     </div>
   );

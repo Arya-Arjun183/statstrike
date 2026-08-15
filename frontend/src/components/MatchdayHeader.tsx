@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, Sparkles, MessageSquarePlus } from 'lucide-react';
+import { Moon, Sun, Sparkles, MessageSquarePlus, Database } from 'lucide-react';
 import { StatStrikeLogo } from './StatStrikeLogo';
 import type { MatchdaySummary } from '../types/matchday';
 
@@ -16,6 +16,7 @@ interface MatchdayHeaderProps {
   isLightMode: boolean;
   onToggleTheme: () => void;
   onOpenFeedback: () => void;
+  onOpenCredits: () => void;
 }
 
 export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
@@ -31,6 +32,7 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
   isLightMode,
   onToggleTheme,
   onOpenFeedback,
+  onOpenCredits,
 }) => {
   return (
     <header className="matchday-header-container">
@@ -47,6 +49,13 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
 
         <div className="header-controls">
           <div className="view-switcher">
+            <button
+              className="view-tab-btn"
+              onClick={onOpenCredits}
+            >
+              <Database size={16} />
+              <span>Data Credits</span>
+            </button>
             <button
               className="view-tab-btn"
               onClick={onOpenFeedback}
