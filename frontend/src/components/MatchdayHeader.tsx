@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Moon, Sun, Layers, Sparkles, MessageSquarePlus } from 'lucide-react';
+import { Moon, Sun, Sparkles, MessageSquarePlus } from 'lucide-react';
 import { StatStrikeLogo } from './StatStrikeLogo';
 import type { MatchdaySummary } from '../types/matchday';
 
@@ -13,8 +13,6 @@ interface MatchdayHeaderProps {
   summary?: MatchdaySummary;
   activeFilter: 'all' | 'high_conf' | 'toss_up';
   onSelectFilter: (filter: 'all' | 'high_conf' | 'toss_up') => void;
-  activeView: 'matchday' | 'custom';
-  onSelectView: (view: 'matchday' | 'custom') => void;
   isLightMode: boolean;
   onToggleTheme: () => void;
   onOpenFeedback: () => void;
@@ -30,8 +28,6 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
   summary,
   activeFilter,
   onSelectFilter,
-  activeView,
-  onSelectView,
   isLightMode,
   onToggleTheme,
   onOpenFeedback,
@@ -52,20 +48,6 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
         <div className="header-controls">
           <div className="view-switcher">
             <button
-              className={`view-tab-btn ${activeView === 'matchday' ? 'active' : ''}`}
-              onClick={() => onSelectView('matchday')}
-            >
-              <Calendar size={16} />
-              <span>Matchday Hub</span>
-            </button>
-            <button
-              className={`view-tab-btn ${activeView === 'custom' ? 'active' : ''}`}
-              onClick={() => onSelectView('custom')}
-            >
-              <Layers size={16} />
-              <span>Custom Simulator</span>
-            </button>
-            <button
               className="view-tab-btn"
               onClick={onOpenFeedback}
             >
@@ -85,7 +67,6 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
         </div>
       </div>
 
-      {activeView === 'matchday' && (
         <div className="matchday-banner glass-panel">
           <div className="matchday-meta">
             <div className="matchday-title-row">
@@ -136,9 +117,7 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
             </div>
           )}
         </div>
-      )}
 
-      {activeView === 'matchday' && (
         <div className="filter-toolbar">
           <div className="filter-tabs">
             <button
@@ -162,7 +141,6 @@ export const MatchdayHeader: React.FC<MatchdayHeaderProps> = ({
             </button>
           </div>
         </div>
-      )}
     </header>
   );
 };

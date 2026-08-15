@@ -565,7 +565,13 @@ def compute_model_explainability(
     }
 
 
-def get_matchday_overview(matchweek: int = 1, force_recompute: bool = False) -> dict[str, Any]:
+def get_matchday_overview(
+    matchweek: int = 1, 
+    force_recompute: bool = False,
+    config: dict = None,
+    model=None,
+    df_history: pd.DataFrame = None
+) -> dict[str, Any]:
     """Assemble complete matchday data with predictions, quick facts, and explainability."""
     cache_dir = Path("data/cache")
     cache_file = cache_dir / f"matchweek_{matchweek}.json"
@@ -578,14 +584,18 @@ def get_matchday_overview(matchweek: int = 1, force_recompute: bool = False) -> 
             print(f"Error loading cache for matchweek {matchweek}: {e}")
 
     round_name, season_name, fixtures, available_matchweeks, current_mw = get_current_matchday_fixtures(matchweek)
-    config = load_config(CONFIG_PATH)
-    df_history = load_matches(
-        csv_path=config["data"].get("csv_path"),
-        csv_glob=config["data"].get("csv_glob")
-    )
+    
+    if config is None:
+        config = load_config(CONFIG_PATH)
+        
+    if df_history is None:
+        df_history = load_matches(
+            csv_path=config["data"].get("csv_path"),
+            csv_glob=config["data"].get("csv_glob")
+        )
     
     # 1. Run inference on all matchday fixtures
-    pred_results = predict_fixtures(config, fixtures)
+    pred_results = predict_fixtures(config, fixtures, model=model, df_history=df_history)
     
     matches_payload = []
     home_wins = 0
