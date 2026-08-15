@@ -42,7 +42,7 @@ def get_match_odds(home_team: str, away_team: str) -> dict:
             h_api = normalize_team_name(match.get("home_team", ""))
             a_api = normalize_team_name(match.get("away_team", ""))
             
-            if (h_api == home_norm and a_api == away_norm) or (h_api == away_norm and a_api == home_norm):
+            if h_api == home_norm and a_api == away_norm:
                 bookies = match.get("bookmakers", [])
                 if not bookies:
                     continue
