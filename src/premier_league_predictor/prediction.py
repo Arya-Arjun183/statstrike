@@ -52,6 +52,8 @@ def _build_fixture_df(
 def predict_fixtures(
     config: dict,
     fixtures: list[dict] | pd.DataFrame,
+    model=None,
+    df_history: pd.DataFrame = None,
 ) -> list[dict]:
     """Predict outcomes for upcoming fixtures.
 
@@ -76,17 +78,21 @@ def predict_fixtures(
     output_cfg = config["output"]
 
     # Load trained model
-    model_path = Path(output_cfg["model_path"])
-    if not model_path.exists():
-        raise FileNotFoundError(
-            f"Model file not found: {model_path}.  Run 'train' first."
-        )
-    model = joblib.load(model_path)
+    if model is None:
+        model_path = Path(output_cfg["model_path"])
+        if not model_path.exists():
+            raise FileNotFoundError(
+                f"Model file not found: {model_path}.  Run 'train' first."
+            )
+        model = joblib.load(model_path)
 
     # Load historical data
-    df = load_matches(
-        csv_path=data_cfg.get("csv_path"), csv_glob=data_cfg.get("csv_glob")
-    )
+    if df_history is not None:
+        df = df_history.copy()
+    else:
+        df = load_matches(
+            csv_path=data_cfg.get("csv_path"), csv_glob=data_cfg.get("csv_glob")
+        )
 
     # Build prediction DataFrame
     if isinstance(fixtures, list):
