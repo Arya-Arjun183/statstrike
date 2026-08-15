@@ -39,8 +39,8 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
         body: JSON.stringify({
           access_key: accessKey,
           subject: `StatStrike: New ${type}`,
-          from_name: name || 'Anonymous User',
-          email: email || 'No email provided',
+          from_name: name || 'default',
+          email: email || 'arya.arjun2029@gmail.com',
           message: message,
           feedback_type: type
         }),
@@ -119,7 +119,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <label htmlFor="name" style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
-                  Name <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>(optional)</span>
+                  Name
                 </label>
                 <input
                   type="text"
@@ -138,7 +138,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <label htmlFor="email" style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
-                  Email <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>(optional)</span>
+                  Email
                 </label>
                 <input
                   type="email"
