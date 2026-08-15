@@ -253,7 +253,8 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
           ) : (
             <div className="tab-content facts-tab">
               {/* Betting Odds */}
-              {match.odds && (
+              {/* Betting Odds */}
+              {match.odds ? (
                 <div className="sub-panel">
                   <div className="sub-panel-title">
                     <Percent size={16} />
@@ -278,6 +279,16 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({ match, onClo
                       <span className="split-sub" style={{ marginTop: '4px' }}>Bookie: {Math.round(match.odds.away_implied * 100)}% ({match.odds.away_odds})</span>
                       {match.prob_away > match.odds.away_implied + 0.03 && <span style={{color: '#10b981', fontWeight: 'bold', fontSize: '0.8rem', marginTop: '4px', display: 'inline-block'}}>+EV Edge</span>}
                     </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="sub-panel">
+                  <div className="sub-panel-title">
+                    <Percent size={16} />
+                    <span>Betting Value Edge (+EV)</span>
+                  </div>
+                  <div style={{ padding: '1.5rem', textAlign: 'center', backgroundColor: 'var(--bg-tertiary)', borderRadius: '0.5rem', border: '1px dashed var(--border-light)', color: 'var(--text-secondary)' }}>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>Live betting odds will become available closer to the match date.</p>
                   </div>
                 </div>
               )}
