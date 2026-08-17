@@ -44,6 +44,12 @@ Click on any fixture card to open a deep-dive tactical modal featuring:
 - `data/raw/premier/fixtures-26-27.csv`: 2026/27 official Premier League schedule.
 - `data/raw/premier/EFL_Championship_25_26_xG.csv`: 2025/26 Championship dataset with verified xG overrides for promoted clubs.
 
+### Deployment & Optimizations
+- **Frontend (Vercel):** The React SPA is deployed on Vercel's Edge network for fast, low-latency delivery.
+- **Backend (Render):** The FastAPI Python backend is optimized for strict memory constraints (e.g., Render's Free Tier 512MB RAM).
+- **Global Model Loading:** To prevent Out-Of-Memory (OOM) crashes under concurrent traffic, all ML models and datasets (`.pkl`, `.joblib`) are loaded exactly once into a shared memory state during the FastAPI `lifespan` startup phase. This ensures memory usage remains flat regardless of concurrent user load.
+- **Stateless Architecture:** The application does not require a persistent SQL or NoSQL database. Predictions are made via in-memory inference and real-time external API data, eliminating database maintenance and scaling bottlenecks.
+
 ---
 
 ## 💻 Quick Start
