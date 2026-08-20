@@ -76,9 +76,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
           </div>
         </div>
 
-        {/* Center VS / Prediction */}
+        {/* Center Prediction Anchor */}
         <div className="center-vs-cell">
-          <span className="vs-badge">VS</span>
           <div className={`pred-outcome-pill ${getPredictionClass()}`}>
             {getPredictionTitle()}
           </div>

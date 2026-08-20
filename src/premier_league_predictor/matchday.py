@@ -512,7 +512,14 @@ def compute_model_explainability(
         
     scores.sort(key=lambda x: x["prob"], reverse=True)
     top_5_scores = scores[:5]
-    most_likely_score = top_5_scores[0]["score"] if top_5_scores else "1-1"
+    
+    pred_label = pred_result.get("prediction", "H")
+    
+    # Ensure the most likely score matches the predicted outcome
+    matching_scores = [s for s in scores if (pred_label == "H" and s["home_goals"] > s["away_goals"]) or 
+                                            (pred_label == "A" and s["away_goals"] > s["home_goals"]) or 
+                                            (pred_label == "D" and s["home_goals"] == s["away_goals"])]
+    most_likely_score = matching_scores[0]["score"] if matching_scores else (top_5_scores[0]["score"] if top_5_scores else "1-1")
 
     # Tactical comparison metrics (0-100 scale)
     h_att = min(98, max(40, int(50 + (lambda_h - 1.3) * 35)))
@@ -521,7 +528,6 @@ def compute_model_explainability(
     a_def = min(98, max(40, int(50 + (1.7 - lambda_h) * 30)))
 
     # Dynamic Narrative Builder
-    pred_label = pred_result.get("prediction", "H")
     
     if pred_label == "H":
         edge_text = f"{h_norm}'s projected attacking output ({lambda_h:.2f} xG) outperforms {a_norm}'s road defense ({lambda_a:.2f} expected goals conceded)."
@@ -532,9 +538,18 @@ def compute_model_explainability(
         )
     elif pred_label == "A":
         edge_text = f"{a_norm}'s tactical efficiency and offensive quality ({lambda_a:.2f} projected xG) give them a distinct edge over {h_norm}'s backline."
+        
+        away_elo = quick_facts['elo']['away_elo']
+        home_elo = quick_facts['elo']['home_elo']
+        elo_text = (
+            f"{a_norm}'s superior Elo rating ({away_elo} vs {home_elo})"
+            if away_elo > home_elo
+            else f"{a_norm}'s tactical metrics overcome their Elo deficit ({away_elo} vs {home_elo})"
+        )
+        
         narrative = (
             f"The model favors an away victory for {a_norm} with a {prob_a*100:.1f}% probability. "
-            f"{edge_text} Despite {h_norm}'s home crowd, {a_norm}'s superior Elo rating ({quick_facts['elo']['away_elo']} vs {quick_facts['elo']['home_elo']}) "
+            f"{edge_text} Despite {h_norm}'s home crowd, {elo_text} "
             f"drives the outcome, with {most_likely_score} predicted as the top exact scoreline."
         )
     else:
