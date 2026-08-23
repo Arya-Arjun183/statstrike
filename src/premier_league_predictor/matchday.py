@@ -574,6 +574,31 @@ def compute_model_explainability(
     }
 
 
+def _inject_completed_status(matches_list: list, df_history: pd.DataFrame):
+    if df_history is None or df_history.empty:
+        return
+    for m in matches_list:
+        if m.get("status") == "completed":
+            continue
+            
+        m_history = df_history[
+            (df_history["HomeTeam"] == m["home_team"]) &
+            (df_history["AwayTeam"] == m["away_team"])
+        ]
+        if not m_history.empty:
+            for _, row in m_history.iterrows():
+                try:
+                    h_date = pd.to_datetime(row["Date"])
+                    f_date = pd.to_datetime(m["date"], dayfirst=True)
+                    if abs((h_date - f_date).days) <= 3:
+                        h_g = int(row.get("FTHG", row.get("goals_home", row.get("HomeGoals", 0))))
+                        a_g = int(row.get("FTAG", row.get("goals_away", row.get("AwayGoals", 0))))
+                        m["actual_score"] = f"{h_g}-{a_g}"
+                        m["status"] = "completed"
+                        break
+                except:
+                    pass
+
 def get_matchday_overview(
     matchweek: int = 1, 
     force_recompute: bool = False,
@@ -585,15 +610,6 @@ def get_matchday_overview(
     cache_dir = Path("data/cache")
     cache_file = cache_dir / f"matchweek_{matchweek}.json"
     
-    if not force_recompute and cache_file.exists():
-        try:
-            with open(cache_file, "r") as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"Error loading cache for matchweek {matchweek}: {e}")
-
-    round_name, season_name, fixtures, available_matchweeks, current_mw = get_current_matchday_fixtures(matchweek)
-    
     if config is None:
         config = load_config(CONFIG_PATH)
         
@@ -602,52 +618,26 @@ def get_matchday_overview(
             csv_path=config["data"].get("csv_path"),
             csv_glob=config["data"].get("csv_glob")
         )
-    
-    # 1. Run inference on all matchday fixtures
-    pred_results = predict_fixtures(config, fixtures, model=model, df_history=df_history)
-    
-    matches_payload = []
-    home_wins = 0
-    draws = 0
-    away_wins = 0
-    
-    for i, fix in enumerate(fixtures):
-        p_res = pred_results[i] if i < len(pred_results) else {
-            "prediction": "H", "prob_home": 0.5, "prob_draw": 0.3, "prob_away": 0.2
-        }
-        
-        pred = p_res.get("prediction", "H")
-        if pred == "H":
-            home_wins += 1
-        elif pred == "D":
-            draws += 1
-        else:
-            away_wins += 1
-            
-        prob_h = p_res.get("prob_home", 0.45)
-        prob_d = p_res.get("prob_draw", 0.28)
-        prob_a = p_res.get("prob_away", 0.27)
-        max_prob = max(prob_h, prob_a)
-        
-        if max_prob >= 0.58:
-            conf_label = "High Confidence"
-            conf_class = "confidence-high"
-        elif max_prob >= 0.48:
-            conf_label = "Moderate Confidence"
-            conf_class = "confidence-med"
-        else:
-            conf_label = "Toss Up"
-            conf_class = "confidence-low"
 
-        # Compute Quick Facts & Explainability
-        odds = get_match_odds(fix["HomeTeam"], fix["AwayTeam"])
-        quick_facts = compute_quick_facts(fix["HomeTeam"], fix["AwayTeam"], df_history)
-        explanation = compute_model_explainability(fix["HomeTeam"], fix["AwayTeam"], p_res, quick_facts)
-        
+    if not force_recompute and cache_file.exists():
+        try:
+            with open(cache_file, "r") as f:
+                data = json.load(f)
+            # Inject actual scores dynamically for cached upcoming matches that have now completed
+            _inject_completed_status(data.get("matches", []), df_history)
+            return data
+        except Exception as e:
+            print(f"Error loading cache for matchweek {matchweek}: {e}")
+
+    round_name, season_name, fixtures, available_matchweeks, current_mw = get_current_matchday_fixtures(matchweek)
+    
+    upcoming_fixtures = []
+    completed_fixtures = []
+    
+    for fix in fixtures:
         status = "upcoming"
         actual_score = None
         
-        # Check if match is already played
         if df_history is not None and not df_history.empty:
             m_history = df_history[
                 (df_history["HomeTeam"] == normalize_team_name(fix["HomeTeam"])) &
@@ -666,6 +656,84 @@ def get_matchday_overview(
                             break
                     except:
                         pass
+                        
+        fix["_status"] = status
+        fix["_actual_score"] = actual_score
+        
+        if status == "upcoming":
+            upcoming_fixtures.append(fix)
+        else:
+            completed_fixtures.append(fix)
+    
+    # 1. Run inference ONLY on upcoming fixtures
+    if upcoming_fixtures:
+        pred_results = predict_fixtures(config, upcoming_fixtures, model=model, df_history=df_history)
+    else:
+        pred_results = []
+    
+    matches_payload = []
+    home_wins = 0
+    draws = 0
+    away_wins = 0
+    
+    pred_idx = 0
+    
+    for i, fix in enumerate(fixtures):
+        status = fix["_status"]
+        actual_score = fix["_actual_score"]
+        
+        if status == "upcoming":
+            p_res = pred_results[pred_idx] if pred_idx < len(pred_results) else {
+                "prediction": "H", "prob_home": 0.5, "prob_draw": 0.3, "prob_away": 0.2
+            }
+            pred_idx += 1
+            
+            pred = p_res.get("prediction", "H")
+            if pred == "H":
+                home_wins += 1
+            elif pred == "D":
+                draws += 1
+            else:
+                away_wins += 1
+                
+            prob_h = p_res.get("prob_home", 0.45)
+            prob_d = p_res.get("prob_draw", 0.28)
+            prob_a = p_res.get("prob_away", 0.27)
+            max_prob = max(prob_h, prob_a)
+            
+            if max_prob >= 0.58:
+                conf_label = "High Confidence"
+                conf_class = "confidence-high"
+            elif max_prob >= 0.48:
+                conf_label = "Moderate Confidence"
+                conf_class = "confidence-med"
+            else:
+                conf_label = "Toss Up"
+                conf_class = "confidence-low"
+
+            quick_facts = compute_quick_facts(fix["HomeTeam"], fix["AwayTeam"], df_history)
+            explanation = compute_model_explainability(fix["HomeTeam"], fix["AwayTeam"], p_res, quick_facts)
+        else:
+            # Completed match: don't run model
+            pred = "H"
+            prob_h, prob_d, prob_a = 0.0, 0.0, 0.0
+            conf_label = "Completed"
+            conf_class = "confidence-high"
+            quick_facts = {
+                "home_form_summary": "",
+                "away_form_summary": "",
+                "home_form": [], "away_form": [],
+                "elo": {"home_elo": 1500, "away_elo": 1500},
+                "home_split": {"win_pct": 0}, "away_split": {"win_pct": 0},
+                "h2h_matches": []
+            }
+            explanation = {
+                "most_likely_score": actual_score or "0-0",
+                "key_factors": [{"factor": "Match Status", "home_val": "Completed", "away_val": ""}],
+                "tactical_ratings": {"home_attack": 50, "home_defense": 50, "away_attack": 50, "away_defense": 50}
+            }
+            
+        odds = get_match_odds(fix["HomeTeam"], fix["AwayTeam"])
         
         matches_payload.append({
             "fixture_id": fix.get("fixture_id", i + 1),
