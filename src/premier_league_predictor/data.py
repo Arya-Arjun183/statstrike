@@ -152,10 +152,17 @@ def _read_csv_with_season(path: Path) -> pd.DataFrame:
         df["AwayTeam"] = df["AwayTeam"].apply(normalize_team_name)
 
     # Normalize columns for xG datasets
-    if "goals_home" in df.columns and "FTHG" not in df.columns:
-        df = df.rename(columns={"goals_home": "FTHG"})
-    if "goals_away" in df.columns and "FTAG" not in df.columns:
-        df = df.rename(columns={"goals_away": "FTAG"})
+    if "goals_home" in df.columns:
+        if "FTHG" not in df.columns:
+            df["FTHG"] = df["goals_home"]
+        else:
+            df["FTHG"] = df["FTHG"].fillna(df["goals_home"])
+            
+    if "goals_away" in df.columns:
+        if "FTAG" not in df.columns:
+            df["FTAG"] = df["goals_away"]
+        else:
+            df["FTAG"] = df["FTAG"].fillna(df["goals_away"])
         
     if "FTHG" in df.columns and "FTAG" in df.columns and "FTR" not in df.columns:
         df["FTR"] = "D"
