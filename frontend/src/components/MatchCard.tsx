@@ -51,9 +51,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
           <Clock size={13} />
           <span>{localTimeInfo.fullLocalDisplay}</span>
         </div>
-        <div className={`confidence-tag ${match.confidence_class}`}>
-          {match.confidence_class === 'confidence-high' && <Sparkles size={11} />}
-          <span>{match.confidence_label}</span>
+        <div className={`confidence-tag ${match.status === 'completed' ? 'confidence-high' : match.confidence_class}`}>
+          {match.status === 'completed' ? (
+            <span>Full Time</span>
+          ) : (
+            <>
+              {match.confidence_class === 'confidence-high' && <Sparkles size={11} />}
+              <span>{match.confidence_label}</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -78,17 +84,25 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
 
         {/* Center Prediction Anchor */}
         <div className="center-vs-cell">
-          <div className={`pred-outcome-pill ${getPredictionClass()}`}>
-            {getPredictionTitle()}
-          </div>
-          {valueBet && (
-            <div className="ev-badge" style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-              <Sparkles size={10} /> {valueBet}
+          {match.status === 'completed' ? (
+            <div className="actual-score" style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-bright)' }}>
+              {match.actual_score}
             </div>
+          ) : (
+            <>
+              <div className={`pred-outcome-pill ${getPredictionClass()}`}>
+                {getPredictionTitle()}
+              </div>
+              {valueBet && (
+                <div className="ev-badge" style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <Sparkles size={10} /> {valueBet}
+                </div>
+              )}
+              <div className="score-hint">
+                Top Score: <strong>{match.most_likely_score}</strong>
+              </div>
+            </>
           )}
-          <div className="score-hint">
-            Top Score: <strong>{match.most_likely_score}</strong>
-          </div>
         </div>
 
         {/* Away Team */}
@@ -111,30 +125,32 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onSelectMatch }) =>
       </div>
 
       {/* Tri-color Probability Bar */}
-      <div className="prob-bar-container">
-        <div className="prob-labels-row">
-          <span className="prob-label home-val">{homePct}%</span>
-          <span className="prob-label draw-val">{drawPct}% Draw</span>
-          <span className="prob-label away-val">{awayPct}%</span>
+      {match.status !== 'completed' && (
+        <div className="prob-bar-container">
+          <div className="prob-labels-row">
+            <span className="prob-label home-val">{homePct}%</span>
+            <span className="prob-label draw-val">{drawPct}% Draw</span>
+            <span className="prob-label away-val">{awayPct}%</span>
+          </div>
+          <div className="prob-bar-track">
+            <div
+              className="prob-segment seg-home"
+              style={{ width: `${homePct}%` }}
+              title={`Home Win: ${homePct}%`}
+            />
+            <div
+              className="prob-segment seg-draw"
+              style={{ width: `${drawPct}%` }}
+              title={`Draw: ${drawPct}%`}
+            />
+            <div
+              className="prob-segment seg-away"
+              style={{ width: `${awayPct}%` }}
+              title={`Away Win: ${awayPct}%`}
+            />
+          </div>
         </div>
-        <div className="prob-bar-track">
-          <div
-            className="prob-segment seg-home"
-            style={{ width: `${homePct}%` }}
-            title={`Home Win: ${homePct}%`}
-          />
-          <div
-            className="prob-segment seg-draw"
-            style={{ width: `${drawPct}%` }}
-            title={`Draw: ${drawPct}%`}
-          />
-          <div
-            className="prob-segment seg-away"
-            style={{ width: `${awayPct}%` }}
-            title={`Away Win: ${awayPct}%`}
-          />
-        </div>
-      </div>
+      )}
 
       {/* Footer Info & Action */}
       <div className="card-footer-row">

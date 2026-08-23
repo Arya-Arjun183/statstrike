@@ -176,19 +176,53 @@ def compute_quick_facts(home_team: str, away_team: str, df_history: pd.DataFrame
     def _get_form(team_name: str) -> list[dict[str, Any]]:
         t_matches = df_history[(df_history["HomeTeam"] == team_name) | (df_history["AwayTeam"] == team_name)]
         
-        # Check if team is a newly promoted side (Coventry, Hull, Ipswich, etc.) or has no recent PL matches
-        use_efl = False
-        if t_matches.empty:
-            use_efl = True
-        elif team_name in ["Coventry", "Hull", "Ipswich"]:
-            use_efl = True
-            
-        if use_efl and df_efl is not None:
+        pl_form_list = []
+        if not t_matches.empty:
+            last_pl = t_matches.tail(5)
+            for _, row in last_pl.iterrows():
+                is_home = (row["HomeTeam"] == team_name)
+                
+                # Extract goals safely
+                h_val = row.get("goals_home", row.get("FTHG", row.get("HomeGoals", 0)))
+                a_val = row.get("goals_away", row.get("FTAG", row.get("AwayGoals", 0)))
+                try:
+                    h_goals = int(h_val) if pd.notna(h_val) else 0
+                    a_goals = int(a_val) if pd.notna(a_val) else 0
+                except (ValueError, TypeError):
+                    h_goals, a_goals = 0, 0
+                    
+                gf = h_goals if is_home else a_goals
+                ga = a_goals if is_home else h_goals
+                opp = row["AwayTeam"] if is_home else row["HomeTeam"]
+                
+                if gf > ga:
+                    res = "W"
+                elif gf == ga:
+                    res = "D"
+                else:
+                    res = "L"
+                    
+                xg_f = float(row.get("HXG", 1.5)) if is_home else float(row.get("AXG", 1.2))
+                xg_a = float(row.get("AXG", 1.2)) if is_home else float(row.get("HXG", 1.5))
+                
+                pl_form_list.append({
+                    "result": res,
+                    "opponent": opp,
+                    "score": f"{gf}-{ga}",
+                    "is_home": is_home,
+                    "date": str(row.get("Date", "")),
+                    "xg_for": round(xg_f, 2),
+                    "xg_against": round(xg_a, 2),
+                    "league": "Premier League",
+                })
+
+        if len(pl_form_list) < 5 and df_efl is not None:
             efl_matches = df_efl[(df_efl["HomeNorm"] == team_name) | (df_efl["AwayNorm"] == team_name)]
             if not efl_matches.empty:
-                last_5 = efl_matches.tail(5)
-                form_list = []
-                for _, row in last_5.iterrows():
+                needed = 5 - len(pl_form_list)
+                last_efl = efl_matches.tail(needed)
+                efl_form_list = []
+                for _, row in last_efl.iterrows():
                     is_home = (row["HomeNorm"] == team_name)
                     
                     # Parse goals
@@ -237,7 +271,7 @@ def compute_quick_facts(home_team: str, away_team: str, df_history: pd.DataFrame
                     if xg_a is None or pd.isna(xg_a):
                         xg_a = round(max(0.3, ga * 0.85 + 0.3), 2)
                         
-                    form_list.append({
+                    efl_form_list.append({
                         "result": res,
                         "opponent": opp,
                         "score": f"{gf}-{ga}",
@@ -247,50 +281,10 @@ def compute_quick_facts(home_team: str, away_team: str, df_history: pd.DataFrame
                         "xg_against": round(xg_a, 2),
                         "league": "EFL Championship",
                     })
-                return form_list
-
-        if t_matches.empty:
-            return []
-        
-        last_5 = t_matches.tail(5)
-        form_list = []
-        for _, row in last_5.iterrows():
-            is_home = (row["HomeTeam"] == team_name)
-            
-            # Extract goals safely
-            h_val = row.get("goals_home", row.get("FTHG", row.get("HomeGoals", 0)))
-            a_val = row.get("goals_away", row.get("FTAG", row.get("AwayGoals", 0)))
-            try:
-                h_goals = int(h_val) if pd.notna(h_val) else 0
-                a_goals = int(a_val) if pd.notna(a_val) else 0
-            except (ValueError, TypeError):
-                h_goals, a_goals = 0, 0
                 
-            gf = h_goals if is_home else a_goals
-            ga = a_goals if is_home else h_goals
-            opp = row["AwayTeam"] if is_home else row["HomeTeam"]
-            
-            if gf > ga:
-                res = "W"
-            elif gf == ga:
-                res = "D"
-            else:
-                res = "L"
+                pl_form_list = efl_form_list + pl_form_list
                 
-            xg_f = float(row.get("HXG", 1.5)) if is_home else float(row.get("AXG", 1.2))
-            xg_a = float(row.get("AXG", 1.2)) if is_home else float(row.get("HXG", 1.5))
-            
-            form_list.append({
-                "result": res,
-                "opponent": opp,
-                "score": f"{gf}-{ga}",
-                "is_home": is_home,
-                "date": str(row.get("Date", "")),
-                "xg_for": round(xg_f, 2),
-                "xg_against": round(xg_a, 2),
-                "league": "Premier League",
-            })
-        return form_list
+        return pl_form_list
 
     home_form = _get_form(h_norm)
     away_form = _get_form(a_norm)
@@ -650,6 +644,29 @@ def get_matchday_overview(
         quick_facts = compute_quick_facts(fix["HomeTeam"], fix["AwayTeam"], df_history)
         explanation = compute_model_explainability(fix["HomeTeam"], fix["AwayTeam"], p_res, quick_facts)
         
+        status = "upcoming"
+        actual_score = None
+        
+        # Check if match is already played
+        if df_history is not None and not df_history.empty:
+            m_history = df_history[
+                (df_history["HomeTeam"] == normalize_team_name(fix["HomeTeam"])) &
+                (df_history["AwayTeam"] == normalize_team_name(fix["AwayTeam"]))
+            ]
+            if not m_history.empty:
+                for _, row in m_history.iterrows():
+                    try:
+                        h_date = pd.to_datetime(row["Date"])
+                        f_date = pd.to_datetime(fix["Date"], dayfirst=True)
+                        if abs((h_date - f_date).days) <= 3:
+                            h_g = int(row.get("FTHG", row.get("goals_home", row.get("HomeGoals", 0))))
+                            a_g = int(row.get("FTAG", row.get("goals_away", row.get("AwayGoals", 0))))
+                            actual_score = f"{h_g}-{a_g}"
+                            status = "completed"
+                            break
+                    except:
+                        pass
+        
         matches_payload.append({
             "fixture_id": fix.get("fixture_id", i + 1),
             "home_team": normalize_team_name(fix["HomeTeam"]),
@@ -668,6 +685,8 @@ def get_matchday_overview(
             "quick_facts": quick_facts,
             "explanation": explanation,
             "odds": odds,
+            "status": status,
+            "actual_score": actual_score,
         })
         
     result = {

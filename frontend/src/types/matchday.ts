@@ -111,6 +111,8 @@ export interface MatchFixture {
   quick_facts: QuickFacts;
   explanation: ModelExplanation;
   odds?: MatchOdds | null;
+  status?: string;
+  actual_score?: string | null;
 }
 
 export interface MatchdaySummary {
