@@ -66,9 +66,11 @@ CONFIG_PATH = "configs/test_xg_efficient.yaml"
 def health_check():
     return {"status": "ok"}
 
+from typing import Optional
+
 @app.get("/api/matchday")
 @app.get("/matchday")
-def matchday(request: Request, matchweek: int = Query(default=1, ge=1, le=38)):
+def matchday(request: Request, matchweek: Optional[int] = Query(default=None, ge=1, le=38)):
     """Retrieve full matchday predictions, quick facts, and explainability."""
     try:
         return get_matchday_overview(

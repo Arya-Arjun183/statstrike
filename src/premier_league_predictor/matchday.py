@@ -62,14 +62,13 @@ DEFAULT_FIXTURES_2026 = [
 ]
 
 
-def get_current_matchday_fixtures(matchweek: int = 1) -> tuple[str, str, list[dict[str, Any]], list[int], int]:
+def get_current_matchday_fixtures(matchweek: int = None) -> tuple[str, str, list[dict[str, Any]], list[int], int]:
     """
     Fetch active matchday fixtures from the official 2026/27 fixture list or fallbacks.
     Returns (round_name, season_name, matches, available_matchweeks, current_matchweek).
     """
     available_matchweeks = list(range(1, 39))
-    current_mw = matchweek if matchweek and 1 <= matchweek <= 38 else 1
-    round_name = f"Gameweek {current_mw}"
+    current_mw = 1
     season_name = "2026/27"
 
     if FIXTURES_FILE_PATH.exists():
@@ -77,6 +76,20 @@ def get_current_matchday_fixtures(matchweek: int = 1) -> tuple[str, str, list[di
             df = pd.read_csv(FIXTURES_FILE_PATH)
             if "matchweek" in df.columns:
                 available_matchweeks = sorted(df["matchweek"].dropna().unique().astype(int).tolist())
+                
+                if matchweek is None:
+                    # Determine current matchweek based on date
+                    today = pd.Timestamp.now().normalize()
+                    df["parsed_date"] = pd.to_datetime(df["date"], errors="coerce")
+                    future_matches = df[df["parsed_date"] >= today]
+                    if not future_matches.empty:
+                        current_mw = int(future_matches.iloc[0]["matchweek"])
+                    else:
+                        current_mw = 38
+                else:
+                    current_mw = matchweek if 1 <= matchweek <= 38 else 1
+                    
+                round_name = f"Gameweek {current_mw}"
                 df_mw = df[df["matchweek"] == current_mw]
                 
                 matches = []
@@ -600,15 +613,17 @@ def _inject_completed_status(matches_list: list, df_history: pd.DataFrame):
                     pass
 
 def get_matchday_overview(
-    matchweek: int = 1, 
+    matchweek: int = None, 
     force_recompute: bool = False,
     config: dict = None,
     model=None,
     df_history: pd.DataFrame = None
 ) -> dict[str, Any]:
     """Assemble complete matchday data with predictions, quick facts, and explainability."""
+    round_name, season_name, fixtures, available_matchweeks, current_mw = get_current_matchday_fixtures(matchweek)
+    
     cache_dir = Path("data/cache")
-    cache_file = cache_dir / f"matchweek_{matchweek}.json"
+    cache_file = cache_dir / f"matchweek_{current_mw}.json"
     
     if config is None:
         config = load_config(CONFIG_PATH)
@@ -625,12 +640,13 @@ def get_matchday_overview(
                 data = json.load(f)
             # Inject actual scores dynamically for cached upcoming matches that have now completed
             _inject_completed_status(data.get("matches", []), df_history)
+            
+            # Ensure the response has the up-to-date current matchweek even if loaded from cache
+            data["current_matchweek"] = current_mw
             return data
         except Exception as e:
-            print(f"Error loading cache for matchweek {matchweek}: {e}")
-
-    round_name, season_name, fixtures, available_matchweeks, current_mw = get_current_matchday_fixtures(matchweek)
-    
+            print(f"Error loading cache for matchweek {current_mw}: {e}")
+            
     upcoming_fixtures = []
     completed_fixtures = []
     

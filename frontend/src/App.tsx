@@ -17,7 +17,7 @@ import './index.css';
 
 export function App() {
   const [matchdayData, setMatchdayData] = useState<MatchdayOverview | null>(null);
-  const [selectedMatchweek, setSelectedMatchweek] = useState<number>(1);
+  const [selectedMatchweek, setSelectedMatchweek] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<MatchFixture | null>(null);
@@ -28,13 +28,14 @@ export function App() {
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-  const fetchMatchday = useCallback(async (mw: number = selectedMatchweek) => {
+  const fetchMatchday = useCallback(async (mw: number) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_URL}/api/matchday?matchweek=${mw}`);
+      const url = mw > 0 ? `${API_URL}/api/matchday?matchweek=${mw}` : `${API_URL}/api/matchday`;
+      const res = await axios.get(url);
       setMatchdayData(res.data);
-      if (res.data?.current_matchweek) {
+      if (res.data?.current_matchweek && mw === 0) {
         setSelectedMatchweek(res.data.current_matchweek);
       }
     } catch (err: any) {
@@ -43,14 +44,15 @@ export function App() {
     } finally {
       setLoading(false);
     }
-  }, [API_URL, selectedMatchweek]);
+  }, [API_URL]);
 
   useEffect(() => {
-    fetchMatchday(selectedMatchweek);
-  }, [selectedMatchweek]);
+    fetchMatchday(0);
+  }, [fetchMatchday]);
 
   const handleSelectMatchweek = (mw: number) => {
     setSelectedMatchweek(mw);
+    fetchMatchday(mw);
     trackGameweekChange(mw);
   };
 
