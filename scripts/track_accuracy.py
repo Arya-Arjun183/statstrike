@@ -21,36 +21,30 @@ def main():
     config = load_config("configs/default.yaml")
     df_history = load_matches(csv_path=config["data"].get("csv_path"), csv_glob=config["data"].get("csv_glob"))
 
-    cache_dir = Path("data/cache")
-    if not cache_dir.exists():
-        print("Error: data/cache directory not found.")
+    log_file = Path("data/predictions_log.json")
+    if not log_file.exists():
+        print("Error: data/predictions_log.json not found. Generate predictions for upcoming matches first.")
         sys.exit(1)
-
-    json_files = glob.glob(str(cache_dir / "matchweek_*.json"))
-    
+        
+    print("Parsing logged predictions...")
     completed_matches = []
-    
-    print("Parsing cached predictions...")
-    for f_path in json_files:
-        try:
-            with open(f_path, "r") as f:
-                data = json.load(f)
-                
-            matches = data.get("matches", [])
-            _inject_completed_status(matches, df_history)
+    try:
+        with open(log_file, "r") as f:
+            log_data = json.load(f)
             
-            for m in matches:
-                # Only evaluate matches that are completed AND have actual probabilities 
-                # (to skip matches that were completed before the cache was ever generated)
-                if m.get("status") == "completed" and m.get("actual_score"):
-                    if m.get("prob_home", 0.0) == 0.0 and m.get("prob_draw", 0.0) == 0.0:
-                        continue
-                    completed_matches.append(m)
-        except Exception as e:
-            print(f"Warning: Failed to process {f_path}: {e}")
+        matches = list(log_data.values())
+        _inject_completed_status(matches, df_history)
+        
+        for m in matches:
+            if m.get("status") == "completed" and m.get("actual_score"):
+                if m.get("prob_home", 0.0) == 0.0 and m.get("prob_draw", 0.0) == 0.0:
+                    continue
+                completed_matches.append(m)
+    except Exception as e:
+        print(f"Error processing predictions log: {e}")
 
     if not completed_matches:
-        print("No completed matches found in the cache. Run predictions on a completed matchweek first.")
+        print("No completed matches found in the log. Run predictions on a completed matchweek first.")
         sys.exit(0)
 
     total_matches = len(completed_matches)

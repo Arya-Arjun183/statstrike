@@ -612,8 +612,46 @@ def _inject_completed_status(matches_list: list, df_history: pd.DataFrame):
                 except:
                     pass
 
+def _log_upcoming_predictions(matches_payload: list[dict[str, Any]]) -> None:
+    """Persistently log predictions for upcoming matches before they complete."""
+    log_file = Path("data/predictions_log.json")
+    try:
+        if log_file.exists():
+            with open(log_file, "r") as f:
+                log_data = json.load(f)
+        else:
+            log_data = {}
+    except Exception:
+        log_data = {}
+        
+    updated = False
+    for m in matches_payload:
+        if m.get("status") == "upcoming":
+            fix_id = str(m.get("fixture_id"))
+            if fix_id not in log_data:
+                log_data[fix_id] = {
+                    "fixture_id": m.get("fixture_id"),
+                    "home_team": m.get("home_team"),
+                    "away_team": m.get("away_team"),
+                    "date": m.get("date"),
+                    "prediction": m.get("prediction"),
+                    "prob_home": m.get("prob_home"),
+                    "prob_draw": m.get("prob_draw"),
+                    "prob_away": m.get("prob_away"),
+                    "most_likely_score": m.get("most_likely_score"),
+                }
+                updated = True
+                
+    if updated:
+        try:
+            log_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(log_file, "w") as f:
+                json.dump(log_data, f, indent=4)
+        except Exception as e:
+            print(f"Warning: Failed to write to predictions log: {e}")
+
 def get_matchday_overview(
-    matchweek: int = None, 
+    matchweek: int | None = None, 
     force_recompute: bool = False,
     config: dict = None,
     model=None,
@@ -786,6 +824,8 @@ def get_matchday_overview(
         },
         "matches": matches_payload,
     }
+    
+    _log_upcoming_predictions(matches_payload)
     
     # Save to cache
     try:

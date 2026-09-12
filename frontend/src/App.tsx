@@ -118,48 +118,48 @@ export function App() {
 
       {/* Main Content Area */}
       <main className="main-content">
-      {loading && (
-        <div className="state-card glass-panel">
-          <Activity className="loader spinner-large" size={40} />
-          <h3 className="loading-title">Calculating Matchday Predictions...</h3>
-          <p className="loading-desc">
-            Running Dixon-Coles Poisson simulations, extracting team forms, and computing exact scoreline likelihoods for all fixtures.
-          </p>
-        </div>
-      )}
+        {loading && (
+          <div className="state-card glass-panel">
+            <Activity className="loader spinner-large" size={40} />
+            <h3 className="loading-title">Calculating Matchday Predictions...</h3>
+            <p className="loading-desc">
+              Running Dixon-Coles Poisson simulations, extracting team forms, and computing exact scoreline likelihoods for all fixtures.
+            </p>
+          </div>
+        )}
 
-      {error && !loading && (
-        <div className="state-card glass-panel error-card">
-          <AlertCircle size={44} className="error-icon" />
-          <h3 className="error-title">Failed to Load Matchday Data</h3>
-          <p className="error-desc">{error}</p>
-          <button className="btn-primary retry-btn" onClick={() => fetchMatchday(selectedMatchweek)}>
-            <RefreshCw size={16} />
-            <span>Retry Calculation</span>
-          </button>
-        </div>
-      )}
+        {error && !loading && (
+          <div className="state-card glass-panel error-card">
+            <AlertCircle size={44} className="error-icon" />
+            <h3 className="error-title">Failed to Load Matchday Data</h3>
+            <p className="error-desc">{error}</p>
+            <button className="btn-primary retry-btn" onClick={() => fetchMatchday(selectedMatchweek)}>
+              <RefreshCw size={16} />
+              <span>Retry Calculation</span>
+            </button>
+          </div>
+        )}
 
-      {!loading && !error && (
-        <div className="matches-grid">
-          {filteredMatches.length > 0 ? (
-            filteredMatches.map((match) => (
-              <MatchCard
-                key={match.fixture_id}
-                match={match}
-                onSelectMatch={handleSelectMatch}
-              />
-            ))
-          ) : (
-            <div className="empty-filter-state glass-panel">
-              <p>No matches match the selected filter.</p>
-              <button className="btn-primary" onClick={() => handleFilterChange('all')}>
-                Show All Matches
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+        {!loading && !error && (
+          <div className="matches-grid">
+            {filteredMatches.length > 0 ? (
+              filteredMatches.map((match) => (
+                <MatchCard
+                  key={match.fixture_id}
+                  match={match}
+                  onSelectMatch={handleSelectMatch}
+                />
+              ))
+            ) : (
+              <div className="empty-filter-state glass-panel">
+                <p>No matches match the selected filter.</p>
+                <button className="btn-primary" onClick={() => handleFilterChange('all')}>
+                  Show All Matches
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* Interactive Match Detail Modal */}
